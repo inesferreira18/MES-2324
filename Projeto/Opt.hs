@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-module Optimizations where
+
+module Opt where
 
 import Library.StrategicData (StrategicData)
 import Library.Ztrategic
 import Data.Fixed (Pico)
 
+import PicoC
 
 --------------------------------------------------------
 -- Optimization Function

@@ -221,6 +221,10 @@ blocoCodigoC =
 espacos :: Parser [Char]
 espacos = zeroOrMore (satisfy isSpace)
 
+newlines :: Parser [Char]
+newlines = zeroOrMore (satisfy isNewline)
+    where isNewline c = c == '\n'
+
 symbol' :: Char -> Parser Char
 symbol' a  = (\a b -> a) <$> symbol a <*> espacos
 

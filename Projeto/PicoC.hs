@@ -4,6 +4,7 @@
 
 {-# DeriveDataTypeable #-}
 
+module PicoC where
 
 import Parser
 import Prelude hiding ((<*>), (<$>))
@@ -42,77 +43,103 @@ data Inst = Atrib String Exp
 type BlocoC = [Inst]
 
 
+data Exp = Add Exp Exp
+        | Sub Exp Exp
+        | Mult Exp Exp
+        | Div Exp Exp
+        | Neg Exp
+        | Const Int
+        | Var String
+        | Bool Bool
+        | Greater Exp Exp
+        | Less Exp Exp
+        | Equal Exp Exp
+        | GreaterEqual Exp Exp
+        | LessEqual Exp Exp
+        deriving Show
+
+
 
 pPicoC :: Parser PicoC
 pPicoC = f <$> zeroOrMore pInst
     where f a = PicoC a
 
+
+
+
+pBlocoC :: Parser BlocoC
+pBlocoC = enclosedBy (symbol' '{') (zeroOrMore pInst) (symbol' '}') 
+
+
+
 pInst :: Parser Inst
-pInst =  pAtrib <*> symbol' ';'
-     <|> pWhile <*> symbol' ';'
-     <|> pITE <*> symbol' ';'
+pInst =  f <$> pAtrib <*> symbol' ';'
+     <|> g <$> pWhile <*> symbol' ';'
+     <|> h <$> pITE <*> symbol' ';'
+    where f a b = a
+          g a b = a
+          h a b = a
+
+
+
 
 pAtrib :: Parser Inst
 pAtrib = f <$> pNomes <*> symbol' '=' <*> pExp1
        where f a b c = Atrib a c
 
 pWhile :: Parser Inst
-pWhile = f <$> token "while" <*> pExpEq <*> pBlocoC
-    where f a b c = While b c
+pWhile = f <$> token "while" <*> symbol' '(' <*> pExpEq <*> symbol' ')'<*> pBlocoC
+    where f a b c d e = While c e
 
 pITE:: Parser Inst
-pITE = f <$> token "if" <*> pExpEq <*> token "then" <*> pBlocoC <*> token "else" <*> pBlocoC
-    where f a b c d e f = ITE b d f                                                                                                                                                            
+pITE = f <$> token "if" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> token "then" <*> pBlocoC <*> token "else" <*> pBlocoC
+    where f a b c d e f g h = ITE c f h                                                                                                                                                            
 
 
 
-pBlocoC :: Parser BlocoC
-pBlocoC = enclosedBy (symbol' '{') (zeroOrMore pInst) (symbol' '}')
+pExpEq :: Parser Exp
+pExpEq = f <$> pExp1 <*> token' "==" <*> pExp1
+     <|> g <$> pExp1 <*> symbol' '>' <*> pExp1
+     <|> h <$> pExp1 <*> symbol' '<' <*> pExp1
+     <|> i <$> pExp1 <*> token' ">=" <*> pExp1
+     <|> j <$> pExp1 <*> token' "<=" <*> pExp1
+     <|> k <$> pExp1
+     where f a b c = Equal a c
+           g a b c = Greater a c
+           h a b c = Less a c
+           i a b c = GreaterEqual a c
+           j a b c = LessEqual a c
+           k a = a
+
+pExp1 :: Parser Exp
+pExp1 = f <$> pExp0 <*> symbol' '+' <*> pExp1   -- p[0] = p[1] + p[2]
+    <|> g <$> pExp0 <*> symbol' '-' <*> pExp1
+    <|> h <$> pExp0
+    where f a b c = Add a c
+          g a b c = Sub a c
+          h a = a
+
+pExp0 :: Parser Exp
+pExp0 = f <$> pFactor <*> symbol' '*' <*> pExp0
+    <|> g <$> pFactor <*> symbol' '/' <*> pExp0
+    <|> h <$> pFactor
+    where f a b c = Mult a c
+          g a b c = Div a c
+          h a = a
+
+pFactor :: Parser Exp
+pFactor =  f <$> pInt
+       <|> h <$> token "true"
+       <|> i <$> token "false"
+       <|> g <$> pNomes
+       <|> j <$> symbol' '(' <*> pExp1 <*> symbol' ')'
+       where f a = Const a
+             h a = Bool True
+             i a = Bool False
+             g a = Var a
+             j a b c = b
 
 
-
-
-
-
-
---------------------------------------------------------
--- Unparser : Da AST para texto (pretty printer)
---------------------------------------------------------
-
---instance Show PicoC where
---    show = Unparser
-
---unparser :: PicoC -> String
---unparser = upExp1
-
-
--- (Add (Const 3) (Div (Const 5) (Const 5)))
--- (Div (Add (Const 3) (Const 5)) (Const 5))
--- (GreaterEqual (Add (Const 3) (Const 5)) (Sub (Const 2) (Var "aux")))
-
-upExpEq :: Exp -> String
-upExpEq (Equal a b) = upExp1 a ++ " = " ++ upExp1 b
-upExpEq (Greater a b) = upExp1 a ++ " > " ++ upExp1 b
-upExpEq (Less a b) = upExp1 a ++ " < " ++ upExp1 b
-upExpEq (GreaterEqual a b) = upExp1 a ++ " >= " ++ upExp1 b
-upExpEq (LessEqual a b) = upExp1 a ++ " <= " ++ upExp1 b
-upExpEq e = upExp1 e
-
-upExp1 :: Exp -> String
-upExp1 (Add a b) = upExp1 a ++ " + " ++ upExp1 b
-upExp1 (Sub a b) = upExp1 a ++ " - " ++ upExp1 b
-upExp1 e = upExp0 e
-
-upExp0 :: Exp -> String
-upExp0 (Mult a b) = upFactor a ++ " * " ++ upExp0 b
-upExp0 (Div a b) = upFactor a ++ " / " ++ upExp0 b
-upExp0 e = upFactor e
-
-upFactor :: Exp -> String
-upFactor (Const a) = show a
-upFactor (Bool a) = show a
-upFactor (Var a) = a
-upFactor e = "(" ++ upExp1 e ++ ")"
 
 
 --------------------------------------------------------

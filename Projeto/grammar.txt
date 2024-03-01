@@ -1,0 +1,29 @@
+    
+    
+    
+    Inst -> 
+    
+    BlocoC -> [Inst]
+    
+    
+    
+    ExpEq -> Exp1 "==" Exp1                 -- ou Exp1 "==" ExpEq            -- == têm menos prioridade que os outros????
+          |  Exp1 ">" Exp1                  -- ou Exp1 ">" ExpEq
+          |  Exp1 "<" Exp1
+          |  Exp1 ">=" Exp1
+          |  Exp1 "<=" Exp1
+          |  Exp1
+
+    Exp1 -> Exp0 '+' Exp1
+        |  Exp0 '-' Exp1
+        |  Exp0
+
+    Exp0 -> pFactor '*' Exp0
+        |  pFactor '/' Exp0
+        |  pFactor
+
+    pFactor -> int
+            |  true
+            |  false
+            |  var
+            |  '('  Exp1 ')'
