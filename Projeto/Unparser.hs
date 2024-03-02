@@ -29,7 +29,9 @@ upBlocoC (h:t) = upInst h ++ " " ++ upBlocoC t
 
 
 upInst :: Inst -> String
-upInst (Atrib s e) = s ++ " = " ++ upExp1 e                        -- meter ;???????????????????????
+upInst (Atrib s e) = s ++ " = " ++ upExp1 e ++ ";"                        
+upInst (DeclAtrib t s e) = unType t ++ " " ++ s ++ " = " ++ upExp1 e ++ ";"
+upInst (Decl t s) = unType t ++ " " ++ s ++ ";"
 upWhile (While exp b) = "while( " ++ upExpEq exp ++ "){" ++ upBlocoC b ++ "}"
 upITE (ITE exp b1 b2) = "if( " ++ upExpEq exp ++ ") then{" ++ upBlocoC b1 ++ "}else{" ++ upBlocoC b2 ++ "}"
 
