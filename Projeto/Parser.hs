@@ -231,8 +231,16 @@ token' t   = (\a b -> a) <$> token t <*> espacos
 satisfy' :: (Char -> Bool) -> Parser Char
 satisfy' p = (\a b -> a) <$> satisfy p <*> espacos
 
-pNomes = f <$> satisfy' isLower <*> zeroOrMore (satisfy' isAlphaNum) <*> espacos
+pNomes :: Parser [Char]
+pNomes = f <$> satisfy' isLower <*> zeroOrMore (satisfy isAlphaNum) <*> espacos
        where f a b c = a:b
+
+pTrue :: Parser [Char]
+pTrue = (\a _ -> a) <$> token' "True" <*> espacos
+
+pFalse :: Parser [Char]
+pFalse = (\a _ -> a) <$> token' "False" <*> espacos
+
 
 
 

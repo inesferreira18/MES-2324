@@ -10,15 +10,18 @@ import Data.Maybe
 import Data.Data
 import Data.Kind ()
 
-
+teste = "int margem = 15; \n\
+       \ if (margem > 30) \n\ 
+       \ then { margem = 4 * 23 + 3 ; } \n\ 
+       \ else { margem = 0; } "
 
 data PicoC = PicoC [Inst]
            deriving Show
 
 
-data Inst = Decl Type String           -- int margem
-          | DeclAtrib Type String Exp  -- int margem = 10
-          | Atrib String Exp           -- margem = 10                     
+data Inst = Decl Type String           
+          | DeclAtrib Type String Exp  
+          | Atrib String Exp                                
           | While Exp BlocoC
           | ITE Exp BlocoC BlocoC
           deriving Show
@@ -33,6 +36,8 @@ data Type = Int
           | Void
           deriving Show
 
+
+
 data Exp = Add Exp Exp
          | Sub Exp Exp
          | Mult Exp Exp
@@ -40,11 +45,14 @@ data Exp = Add Exp Exp
          | Neg Exp
          | Const Int
          | Var String
+         | Boolean Bool
          | Greater Exp Exp
          | Less Exp Exp
          | Equal Exp Exp
          | GreaterEqual Exp Exp
          | LessEqual Exp Exp
+         | And Exp Exp
+         | Or Exp Exp
          deriving Show
 
 
@@ -60,13 +68,13 @@ pInst :: Parser Inst
 pInst =  f  <$> pDeclAtrib <*> symbol' ';' 
      <|> f1 <$> pDecl <*> symbol' ';'
      <|> f2 <$> pAtrib <*> symbol' ';'
-     <|> g  <$> pWhile <*> symbol' ';'
-     <|> h  <$> pITE <*> symbol' ';'
+     <|> g  <$> pWhile
+     <|> h  <$> pITE 
     where f a b = a
           f1 a b = a
           f2 a b = a  
-          g a b = a
-          h a b = a
+          g a = a
+          h a = a
 
 pBlocoC :: Parser BlocoC
 pBlocoC = f <$> symbol' '{' <*> pInsts <*> symbol' '}'
@@ -104,12 +112,20 @@ pType = f <$> token' "int"
           i a = Bool
           j a = Void
 
+pExpConj :: Parser Exp
+pExpConj =  f <$> pExpEq <*> token' "&&" <*> pExpConj
+        <|> g <$> pExpEq <*> token' "||" <*> pExpConj
+        <|> h <$> pExpEq
+        where f a b c = And a c
+              g a b c = Or a c
+              h a = a
+
 pExpEq :: Parser Exp
-pExpEq = f <$> pExp1 <*> token' "==" <*> pExp1
-     <|> g <$> pExp1 <*> symbol' '>' <*> pExp1
-     <|> h <$> pExp1 <*> symbol' '<' <*> pExp1
-     <|> i <$> pExp1 <*> token' ">=" <*> pExp1
-     <|> j <$> pExp1 <*> token' "<=" <*> pExp1
+pExpEq = f <$> pExp1 <*> token' "==" <*> pExpEq
+     <|> g <$> pExp1 <*> symbol' '>' <*> pExpEq
+     <|> h <$> pExp1 <*> symbol' '<' <*> pExpEq
+     <|> i <$> pExp1 <*> token' ">=" <*> pExpEq
+     <|> j <$> pExp1 <*> token' "<=" <*> pExpEq
      <|> k <$> pExp1
      where f a b c = Equal a c
            g a b c = Greater a c
@@ -137,9 +153,13 @@ pExp0 = f <$> pFactor <*> symbol' '*' <*> pExp0
 pFactor :: Parser Exp
 pFactor =  f <$> pInt
        <|> g <$> pNomes
+       <|> h <$> pTrue
+       <|> i <$> pFalse
        <|> j <$> symbol' '(' <*> pExp1 <*> symbol' ')'
        where f a = Const a
              g a = Var a
+             h a = Boolean True
+             i a = Boolean False
              j a b c = b
 
 

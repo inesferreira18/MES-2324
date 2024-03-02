@@ -7,25 +7,28 @@
     BlocoC -> [Inst]
     
     Type -> int
-        | char
-        | string
-        | bool
-        | void
+          | char
+          | string
+          | bool
+          | void
+
+    ExpConj -> ExpEq && ExpConj
+             | ExpEq || ExpConj
     
-    ExpEq -> Exp1 "==" Exp1                 -- ou Exp1 "==" ExpEq            -- == têm menos prioridade que os outros????
-          |  Exp1 ">" Exp1                  -- ou Exp1 ">" ExpEq
-          |  Exp1 "<" Exp1
-          |  Exp1 ">=" Exp1
-          |  Exp1 "<=" Exp1
+    ExpEq -> Exp1 "==" ExpEq                 -- ou Exp1 "==" ExpEq            
+          |  Exp1 ">" ExpEq                  
+          |  Exp1 "<" ExpEq
+          |  Exp1 ">=" ExpEq
+          |  Exp1 "<=" ExpEq
           |  Exp1
 
     Exp1 -> Exp0 '+' Exp1
-        |  Exp0 '-' Exp1
-        |  Exp0
+         |  Exp0 '-' Exp1
+         |  Exp0
 
     Exp0 -> pFactor '*' Exp0
-        |  pFactor '/' Exp0
-        |  pFactor
+         |  pFactor '/' Exp0
+         |  pFactor
 
     pFactor -> int
             |  true
