@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use newtype instead of data" #-}
-{-# HLINT ignore "Eta reduce" #-}
 module PicoC where
 
 import Parser
@@ -10,14 +7,10 @@ import Data.Maybe
 import Data.Data
 import Data.Kind ()
 
-teste = "int margem = 15; \n\
-       \ if (margem > 30) \n\ 
-       \ then { margem = 4 * 23 + 3 ; } \n\ 
-       \ else { margem = 0; } "
+import Tests
 
 data PicoC = PicoC [Inst]
            deriving Show
-
 
 data Inst = Decl Type String           
           | DeclAtrib Type String Exp  
@@ -25,7 +18,6 @@ data Inst = Decl Type String
           | While Exp BlocoC
           | ITE Exp BlocoC BlocoC
           deriving Show
-
 
 type BlocoC = [Inst]
 
@@ -35,8 +27,6 @@ data Type = Int
           | Bool
           | Void
           deriving Show
-
-
 
 data Exp = Add Exp Exp
          | Sub Exp Exp
@@ -56,7 +46,6 @@ data Exp = Add Exp Exp
          deriving Show
 
 
-
 pPicoC :: Parser PicoC
 pPicoC = f <$> pInsts
     where f = PicoC
@@ -65,16 +54,16 @@ pInsts :: Parser [Inst]
 pInsts = zeroOrMore pInst
 
 pInst :: Parser Inst
-pInst =  f  <$> pDeclAtrib <*> symbol' ';' 
-     <|> f1 <$> pDecl <*> symbol' ';'
-     <|> f2 <$> pAtrib <*> symbol' ';'
-     <|> g  <$> pWhile
-     <|> h  <$> pITE 
-    where f a b = a
-          f1 a b = a
-          f2 a b = a  
-          g a = a
-          h a = a
+pInst =  f  <$> pDeclAtrib <*> symbol' ';' <*> espacos
+     <|> f1 <$> pDecl <*> symbol' ';' <*> espacos
+     <|> f2 <$> pAtrib <*> symbol' ';' <*> espacos
+     <|> g  <$> pWhile <*> espacos
+     <|> h  <$> pITE <*> espacos
+    where f a b c = a
+          f1 a b c = a
+          f2 a b c = a  
+          g a b = a
+          h a b = a
 
 pBlocoC :: Parser BlocoC
 pBlocoC = f <$> symbol' '{' <*> pInsts <*> symbol' '}'
@@ -97,8 +86,8 @@ pWhile = f <$> token' "while" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> pBl
     where f a b c d e = While c e
 
 pITE:: Parser Inst
-pITE = f <$> token' "if" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> token "then" <*> pBlocoC <*> token "else" <*> pBlocoC
-    where f a b c d e f g h = ITE c f h
+pITE = f <$> token' "if" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> token' "then" <*> pBlocoC <*> token' "else" <*> pBlocoC
+    where f a b c d e g h i = ITE c g i
 
 pType :: Parser Type
 pType = f <$> token' "int"
@@ -112,13 +101,13 @@ pType = f <$> token' "int"
           i a = Bool
           j a = Void
 
-pExpConj :: Parser Exp
-pExpConj =  f <$> pExpEq <*> token' "&&" <*> pExpConj
-        <|> g <$> pExpEq <*> token' "||" <*> pExpConj
-        <|> h <$> pExpEq
-        where f a b c = And a c
-              g a b c = Or a c
-              h a = a
+pExpLogicos :: Parser Exp
+pExpLogicos =  f <$> pExpEq <*> token' "&&" <*> pExpLogicos
+           <|> g <$> pExpEq <*> token' "||" <*> pExpLogicos
+           <|> h <$> pExpEq
+           where f a b c = And a c
+                 g a b c = Or a c
+                 h a = a
 
 pExpEq :: Parser Exp
 pExpEq = f <$> pExp1 <*> token' "==" <*> pExpEq
@@ -152,14 +141,14 @@ pExp0 = f <$> pFactor <*> symbol' '*' <*> pExp0
 
 pFactor :: Parser Exp
 pFactor =  f <$> pInt
-       <|> g <$> pNomes
-       <|> h <$> pTrue
-       <|> i <$> pFalse
+       <|> g <$> pTrue
+       <|> h <$> pFalse
+       <|> i <$> pNomes
        <|> j <$> symbol' '(' <*> pExp1 <*> symbol' ')'
        where f a = Const a
-             g a = Var a
-             h a = Boolean True
-             i a = Boolean False
+             g a = Boolean True
+             h a = Boolean False
+             i a = Var a
              j a b c = b
 
 

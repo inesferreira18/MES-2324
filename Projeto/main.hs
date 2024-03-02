@@ -1,22 +1,26 @@
 import Unparser
 import Parser
 import PicoC
-import Opt
+import Tests
+--import Opt
+
 
 -- Parser
 parse :: String -> PicoC
-parse p = fst $ head $ pPicoC p
+parse p = fst $ last $ pPicoC p
 
 -- Unparser
 unparse :: PicoC -> String
 unparse = upPicoC
 
 -- Optimazations
-optimazations:: PicoC -> PicoC
-optimazations = opt
+--optimazations:: PicoC -> PicoC
+--optimazations = opt
 
-parseWithOpt :: String -> PicoC
-parseWithOpt s = opt (parse s)
+--parseWithOpt :: String -> PicoC
+--parseWithOpt s = opt (parse s)
+
+
 
 
 -- Property based testing (verificar ficheiro PropertyBasedTesting para propriedades que aceitam geradores)

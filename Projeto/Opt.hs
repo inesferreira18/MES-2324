@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-
 module Opt where
 
 import Library.StrategicData (StrategicData)
@@ -7,6 +5,7 @@ import Library.Ztrategic
 import Data.Fixed (Pico)
 
 import PicoC
+import Data.Maybe (Maybe (Just))
 
 --------------------------------------------------------
 -- Optimization Function
@@ -17,7 +16,7 @@ opt :: PicoC -> PicoC
 opt program = 
     let pProgram = toZipper program
         Just newProgram = applyTp (full_tdTP step) pProgram
-        step = idTP `adhocTP` optNeutral `adhocTP` optAbsorbing `adhocTP` optNegative `adhocTP` optOperation `adhocTP` optEq 
+        step = idTP `adhocTP` optNeutral `adhocTP` optAbsorbing `adhocTP` optNegative `adhocTP` optOperation `adhocTP` optEq  `adhocTP` optLoop `adhocTP` optCond
     in fromZipper newProgram
 
 -- Neutral element optimization
@@ -59,3 +58,14 @@ optEq (Less (Const a) (Const b)) = Just (Bool (a < b))
 optEq (GreaterEqual (Const a) (Const b)) = Just (Bool (a >= b))
 optEq (LessEqual (Const a) (Const b)) = Just (Bool (a <= b))
 optEq _ = Nothing
+
+-- Loop optimization
+optLoop :: Inst -> Maybe Inst
+optLoop (While (Const 0) b) = Just (While (Boolean False) b)
+optLoop (While (Const _) b) = Just (While (Boolean True) b)
+optLoop _ = Nothing
+
+-- Conditionals optimization
+optCond :: Inst -> Maybe Inst
+optCond (ITE (Not cond) b1 b2) = Just (ITE cond b2 b1)
+optCond _ = Nothing 

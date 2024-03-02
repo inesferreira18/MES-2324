@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use list comprehension" #-}
-
 module Parser where
 
 import Prelude hiding ((<*>), (<$>))
@@ -11,42 +8,23 @@ import Data.Char
 infixl 2 <|>
 infixl 3 <*>
 
--- Parser é uma função que recebe um texto e devolve uma lista de pares (resultado,resto da string)
-type Parser r = String -> [(r,String)] -- r é o tipo do resultado do parser; lista vazia para quand dá erro de parse  
+type Parser r = String -> [(r,String)]
 
 
 symbol :: Char -> Parser Char
 symbol s [] = []
-symbol s (h:t) = [(s,t) | h == s] -- list compreension
+symbol s (h:t) = [(s,t) | h == s]
 
--- ghci parser.hs
--- symbol 'b' "baaaa"                
-
-
-
--- Quero ver se o simbolo à cabeça satisfaz um predicado (função)
--- Recebe um predicado e um texto de entrada
 satisfy :: (Char -> Bool) -> Parser Char
 satisfy p [] = []
 satisfy p (h:t) = if p h
                   then [(h,t)]
                   else []
 
--- :r
--- satisfy isDigit "aa"
--- satisfy isDigit "1aa"
-
-
-
---token :: [Char] -> String -> [([Char],String)]
 token :: [Char] -> Parser [Char]
 token t input = if take (length t) input == t
-                then [(t,drop (length t) input)] -- resultado do parser, o que ficou por processar
+                then [(t,drop (length t) input)] 
                 else []
-
--- token "while" "while (x > 0)...."s
-
-
 
 succeed :: a -> String -> [(a,String)]
 succeed r input = [(r,input)]
@@ -60,18 +38,14 @@ succeed r input = [(r,input)]
     X -> While
         | For
 -}
--- () indica um operador infixo
 
 (<|>) :: Parser a -> Parser a -> Parser a
-(p <|> q) input = p input ++ q input -- concatena o parser que funcionar com o que não funcionar (lista vazia)
+(p <|> q) input = p input ++ q input 
 
-pX :: Parser [Char]     -- aqui não preciso de especificar o argumento de entrada dado que este já está especificado na função token. O Haskell infere o tipo através da análise do contexto (currying)
+pX :: Parser [Char]     
 pX = token "While"
   <|> token "For"
   <|> token "while"
-
--- pX "For (x > 0)...."
-
 
 
 {-
@@ -82,19 +56,15 @@ pX = token "While"
       | bB
 -}
 
--- Esta função é utilizada para aplicar um parser que produz uma função a um parser que produz um argumento. 
--- Devolve um parser que produz o resultado de aplicar a função ao argumento.
 (<*>) :: Parser (a -> r) -> Parser a -> Parser r
-(p <*> q) input = [ (f r,rst') |           -- o resultado do parser é f r e o resto é rst'    
-                    (f  ,rst)  <- p input, -- o parser p produz uma função f e um resto rst;  
-                    (r  ,rst') <- q rst    -- o parser q produz um resultado r e um resto rst';
+(p <*> q) input = [ (f r,rst') |               
+                    (f  ,rst)  <- p input,   
+                    (r  ,rst') <- q rst    
                   ]
 
-
-
 (<$>) :: (a -> r) -> Parser a -> Parser r
-(f <$> p) input = [ (f r,rst) |            -- aplico a função f ao resultado r do parser p
-                    (r  ,rst) <- p input   -- r é o resultado do parser p aplicado à entrada input
+(f <$> p) input = [ (f r,rst) |            
+                    (r  ,rst) <- p input   
                   ]
 
 {-
@@ -102,7 +72,7 @@ pX = token "While"
 -}
 
 pA :: Parser Char
-pA = f <$> symbol 'a' <*> symbol 'b' <*> symbol 'c' <*> symbol 'a' -- f <$> é um functor
+pA = f <$> symbol 'a' <*> symbol 'b' <*> symbol 'c' <*> symbol 'a' 
     where f a b c d = b
 
 
@@ -113,12 +83,10 @@ pA = f <$> symbol 'a' <*> symbol 'b' <*> symbol 'c' <*> symbol 'a' -- f <$> é u
 -}
 
 pAs :: Parser Integer
-pAs =  f <$> symbol 'a'           -- p[0] = p[1] em python
-   <|> g <$> symbol 'a' <*> pAs   -- p[0] = p[1] + p[2] em python         f e g têm que ter o mesmo tipo
+pAs =  f <$> symbol 'a'           
+   <|> g <$> symbol 'a' <*> pAs   
    where f x = 1
-         g x y = 1 + y            -- este parser conta os as 
-
--- pAs "aaaa" -- o último parser é o correto: (4, "")
+         g x y = 1 + y             
 
 
 
@@ -135,22 +103,19 @@ pAs =  f <$> symbol 'a'           -- p[0] = p[1] em python
 
 pInt :: Parser Int
 pInt = f <$> espacos <*> pSinal <*> pDigitos <*> espacos
-     where f _ '-' d _ = read ('-':d)            -- read converte uma string num inteiro
+     where f _ '-' d _ = read ('-':d)            
            f _ _ d _ = read d
 
 pSinal :: Parser Char
 pSinal = symbol '+'
         <|> symbol '-'
-        <|> succeed '+'          -- se não houver sinal, então é positivo
+        <|> succeed '+'          
 
 pDigitos :: Parser [Char]
 pDigitos =  f <$> satisfy isDigit
         <|> g <$> satisfy isDigit <*> pDigitos
         where f d = [d]
               g d ds = d:ds
-
--- pInt "+123" resultado: ("+123","")
-
 
 oneOrMore :: Parser a -> Parser [a]
 oneOrMore p =   f <$>  p
@@ -193,16 +158,11 @@ separatedBy p s =  f <$> p
    where f a     = [a]
          g a b c = a : c;
 
-
 followedBy p s =     succeed []
               <|> f <$> p <*> s <*> followedBy p s
             where f a _ b = a : b
 
-
-
 enclosedBy a c f = (\_ b _ -> b) <$> a <*> c <*> f
-
-
 
 pListasIntHaskell :: Parser [Int]
 pListasIntHaskell =
@@ -216,12 +176,8 @@ blocoCodigoC =
                 (symbol '}')
 
 espacos :: Parser [Char]
-espacos = zeroOrMore (satisfy isSpace)
-
-newlines :: Parser [Char]
-newlines = zeroOrMore (satisfy isNewline)
-    where isNewline c = c == '\n'
-
+espacos = zeroOrMore (satisfy isSpace) -- it also validates \n
+    
 symbol' :: Char -> Parser Char
 symbol' a  = (\a b -> a) <$> symbol a <*> espacos
 
