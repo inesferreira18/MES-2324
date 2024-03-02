@@ -17,6 +17,8 @@ import Control.Concurrent (Chan)
 -- (Div (Add (Const 3) (Const 5)) (Const 5))
 -- (GreaterEqual (Add (Const 3) (Const 5)) (Sub (Const 2) (Var "aux")))
 
+-- (PicoC [DeclAtrib Int "margem" (Const 0),While (Less (Const 2) (Const 3)) [Atrib "margem" (Add (Mult (Const 4) (Const 23)) (Const 3))]]
+
 upPicoC :: PicoC -> String
 upPicoC (PicoC b) = upBlocoC b
 

@@ -16,9 +16,9 @@ data PicoC = PicoC [Inst]
            deriving Show
 
 
-data Inst = Decl Type String 
-          | DeclAtrib Type String Exp
-          | Atrib String Exp
+data Inst = Decl Type String           -- int margem
+          | DeclAtrib Type String Exp  -- int margem = 10
+          | Atrib String Exp           -- margem = 10                     
           | While Exp BlocoC
           | ITE Exp BlocoC BlocoC
           deriving Show
@@ -93,11 +93,11 @@ pITE = f <$> token' "if" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> token "t
     where f a b c d e f g h = ITE c f h
 
 pType :: Parser Type
-pType = f <$> token "int"
-    <|> g <$> token "char"
-    <|> h <$> token "string"
-    <|> i <$> token "bool"
-    <|> j <$> token "void"
+pType = f <$> token' "int"
+    <|> g <$> token' "char"
+    <|> h <$> token' "string"
+    <|> i <$> token' "bool"
+    <|> j <$> token' "void"
     where f a = Int
           g a = Char
           h a = String
