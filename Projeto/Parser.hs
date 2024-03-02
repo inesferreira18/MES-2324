@@ -194,15 +194,13 @@ separatedBy p s =  f <$> p
          g a b c = a : c;
 
 
-followedBy :: Parser a1 -> Parser a2 -> Parser [a1]
 followedBy p s =     succeed []
               <|> f <$> p <*> s <*> followedBy p s
             where f a _ b = a : b
 
 
 
-enclosedBy :: Parser a1 -> Parser r -> Parser a2 -> Parser r
-enclosedBy a c f = (\_ b _ -> b) <$>  a <*> c <*> f
+enclosedBy a c f = (\_ b _ -> b) <$> a <*> c <*> f
 
 
 
@@ -212,7 +210,6 @@ pListasIntHaskell =
                 (separatedBy pInt (symbol ','))
                 (symbol ']')
 
-blocoCodigoC :: Parser [Int]
 blocoCodigoC =
      enclosedBy (symbol '{')
                 (followedBy pInt (symbol ';'))

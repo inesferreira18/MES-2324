@@ -42,6 +42,7 @@ optNegative (Neg (Neg e)) = Just e
 optNegative (Neg (Const a)) = Just (Const (-a))
 optNegative _ = Nothing
 
+-- Basic operations optimization
 optOperation :: Exp -> Maybe Exp
 optOperation (Add (Const a) (Const b)) = Just (Const (a+b))
 optOperation (Add e1 e2) = Just (Add (opt e1) (opt e2))
@@ -50,6 +51,7 @@ optOperation (Mult e1 e2) = Just (Mult (opt e1) (opt e2))
 optOperation (Div e1 e2) = Just (Div (opt e1) (opt e2))
 optOperation _ = Nothing
 
+-- Comparison operations optimization
 optEq :: Exp -> Maybe Exp
 optEq (Equal (Const a) (Const b)) = Just (Bool (a == b))
 optEq (Greater (Const a) (Const b)) = Just (Bool (a > b))

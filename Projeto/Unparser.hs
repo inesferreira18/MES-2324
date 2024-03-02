@@ -1,6 +1,7 @@
 module Unparser where
 
-
+import PicoC
+import Control.Concurrent (Chan)
 --------------------------------------------------------
 -- Unparser : Da AST para texto (pretty printer)
 --------------------------------------------------------
@@ -31,6 +32,13 @@ upWhile (While exp b) = "while( " ++ upExpEq exp ++ "){" ++ upBlocoC b ++ "}"
 upITE (ITE exp b1 b2) = "if( " ++ upExpEq exp ++ ") then{" ++ upBlocoC b1 ++ "}else{" ++ upBlocoC b2 ++ "}"
 
 
+upType :: Type -> String
+upType Int = "int"
+upType Char = "char"
+upType String = "string"
+upType Bool = "bool"
+upType Void = "void"
+
 upExpEq :: Exp -> String
 upExpEq (Equal a b) = upExp1 a ++ " = " ++ upExp1 b
 upExpEq (Greater a b) = upExp1 a ++ " > " ++ upExp1 b
@@ -51,7 +59,6 @@ upExp0 e = upFactor e
 
 upFactor :: Exp -> String
 upFactor (Const a) = show a
-upFactor (Bool a) = show a
 upFactor (Var a) = a
 upFactor e = "(" ++ upExp1 e ++ ")"
 

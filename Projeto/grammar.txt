@@ -1,11 +1,16 @@
     
     
-    
+    PicoC -> 
+
     Inst -> 
     
     BlocoC -> [Inst]
     
-    
+    Type -> int
+        | char
+        | string
+        | bool
+        | void
     
     ExpEq -> Exp1 "==" Exp1                 -- ou Exp1 "==" ExpEq            -- == têm menos prioridade que os outros????
           |  Exp1 ">" Exp1                  -- ou Exp1 ">" ExpEq

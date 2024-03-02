@@ -1,9 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Eta reduce" #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
-
-{-# DeriveDataTypeable #-}
-
+{-# HLINT ignore "Eta reduce" #-}
 module PicoC where
 
 import Parser
@@ -11,91 +8,101 @@ import Prelude hiding ((<*>), (<$>))
 import Data.Char (isLower)
 import Data.Maybe
 import Data.Data
+import Data.Kind ()
 
---import Data.Generics.Zipper
-import Library.Ztrategic
---import Library.StrategicData (StrategicData)
 
-instance StrategicData Int
-instance StrategicData a => StrategicData.StrategicData [a]
-
-instance StrategicData PicoC
-
--- completar o parser
--- completar a função unparser
--- melhorar a função opt para fazer todas as optimizacoes
-
--- testar a propriedade definida pela função prop
---   prop :: PicoC -> Bool
---   prop ast = ast == parser (unparse ast)
--- (precisam usar deriving Eq nos datas types)
 
 data PicoC = PicoC [Inst]
-           deriving (Data,Show)
+           deriving Show
 
 
-data Inst = Atrib String Exp
-         | While Exp BlocoC
-         | ITE Exp BlocoC BlocoC
-          deriving (Data,Show)
+data Inst = Decl Type String 
+          | DeclAtrib Type String Exp
+          | Atrib String Exp
+          | While Exp BlocoC
+          | ITE Exp BlocoC BlocoC
+          deriving Show
 
 
 type BlocoC = [Inst]
 
+data Type = Int
+          | Char
+          | String
+          | Bool
+          | Void
+          deriving Show
 
 data Exp = Add Exp Exp
-        | Sub Exp Exp
-        | Mult Exp Exp
-        | Div Exp Exp
-        | Neg Exp
-        | Const Int
-        | Var String
-        | Bool Bool
-        | Greater Exp Exp
-        | Less Exp Exp
-        | Equal Exp Exp
-        | GreaterEqual Exp Exp
-        | LessEqual Exp Exp
-        deriving Show
+         | Sub Exp Exp
+         | Mult Exp Exp
+         | Div Exp Exp
+         | Neg Exp
+         | Const Int
+         | Var String
+         | Greater Exp Exp
+         | Less Exp Exp
+         | Equal Exp Exp
+         | GreaterEqual Exp Exp
+         | LessEqual Exp Exp
+         deriving Show
 
 
 
 pPicoC :: Parser PicoC
-pPicoC = f <$> zeroOrMore pInst
-    where f a = PicoC a
+pPicoC = f <$> pInsts
+    where f = PicoC
 
-
-
-
-pBlocoC :: Parser BlocoC
-pBlocoC = enclosedBy (symbol' '{') (zeroOrMore pInst) (symbol' '}') 
-
-
+pInsts :: Parser [Inst]
+pInsts = zeroOrMore pInst
 
 pInst :: Parser Inst
-pInst =  f <$> pAtrib <*> symbol' ';'
-     <|> g <$> pWhile <*> symbol' ';'
-     <|> h <$> pITE <*> symbol' ';'
+pInst =  f  <$> pDeclAtrib <*> symbol' ';' 
+     <|> f1 <$> pDecl <*> symbol' ';'
+     <|> f2 <$> pAtrib <*> symbol' ';'
+     <|> g  <$> pWhile <*> symbol' ';'
+     <|> h  <$> pITE <*> symbol' ';'
     where f a b = a
+          f1 a b = a
+          f2 a b = a  
           g a b = a
           h a b = a
 
+pBlocoC :: Parser BlocoC
+pBlocoC = f <$> symbol' '{' <*> pInsts <*> symbol' '}'
+    where f a b c = b
 
+pDecl :: Parser Inst
+pDecl = f <$> pType <*> pNomes
+    where f a b = Decl a b
 
+pDeclAtrib :: Parser Inst
+pDeclAtrib = f <$> pType <*> pNomes <*> symbol' '=' <*> pExp1
+    where f a b c d = DeclAtrib a b d
 
 pAtrib :: Parser Inst
 pAtrib = f <$> pNomes <*> symbol' '=' <*> pExp1
        where f a b c = Atrib a c
 
 pWhile :: Parser Inst
-pWhile = f <$> token "while" <*> symbol' '(' <*> pExpEq <*> symbol' ')'<*> pBlocoC
+pWhile = f <$> token' "while" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> pBlocoC
     where f a b c d e = While c e
 
 pITE:: Parser Inst
-pITE = f <$> token "if" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> token "then" <*> pBlocoC <*> token "else" <*> pBlocoC
-    where f a b c d e f g h = ITE c f h                                                                                                                                                            
+pITE = f <$> token' "if" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> token "then" <*> pBlocoC <*> token "else" <*> pBlocoC
+    where f a b c d e f g h = ITE c f h
 
-
+pType :: Parser Type
+pType = f <$> token "int"
+    <|> g <$> token "char"
+    <|> h <$> token "string"
+    <|> i <$> token "bool"
+    <|> j <$> token "void"
+    where f a = Int
+          g a = Char
+          h a = String
+          i a = Bool
+          j a = Void
 
 pExpEq :: Parser Exp
 pExpEq = f <$> pExp1 <*> token' "==" <*> pExp1
@@ -112,7 +119,7 @@ pExpEq = f <$> pExp1 <*> token' "==" <*> pExp1
            k a = a
 
 pExp1 :: Parser Exp
-pExp1 = f <$> pExp0 <*> symbol' '+' <*> pExp1   -- p[0] = p[1] + p[2]
+pExp1 = f <$> pExp0 <*> symbol' '+' <*> pExp1  
     <|> g <$> pExp0 <*> symbol' '-' <*> pExp1
     <|> h <$> pExp0
     where f a b c = Add a c
@@ -129,13 +136,9 @@ pExp0 = f <$> pFactor <*> symbol' '*' <*> pExp0
 
 pFactor :: Parser Exp
 pFactor =  f <$> pInt
-       <|> h <$> token "true"
-       <|> i <$> token "false"
        <|> g <$> pNomes
        <|> j <$> symbol' '(' <*> pExp1 <*> symbol' ')'
        where f a = Const a
-             h a = Bool True
-             i a = Bool False
              g a = Var a
              j a b c = b
 
@@ -161,7 +164,6 @@ eval (Greater e1 e2) c = fromEnum $ eval e1 c > eval e2 c
 eval (Less e1 e2) c = fromEnum $ eval e1 c < eval e2 c
 eval (GreaterEqual e1 e2) c = fromEnum $ eval e1 c >= eval e2 c
 eval (LessEqual e1 e2) c = fromEnum $ eval e1 c <= eval e2 c
---eval (Bool b) _ = fromEnum b                                    -- permite fazer 1 > True
 
 
 
@@ -207,88 +209,4 @@ Ponto Fixo!
 -}
 
 
-
-examplePicoC = "int margem = 15; \n if (margem > 30) \n then { margem = 4 * 23 + 3 ; } \n else { margem = 0; }"
-example = PicoC [Atrib "margem" (Const 15), ITE (Const 30) [Atrib "x" (Sub (Var "x") (Const 1))]]
-
-{-
-
-t = toZipper examplePicoC
-gethole t :: Maybe PicoC 
-
-Just f1 = down' t
-
-gethole f1 :: Maybe [Inst]
-Just attrib = down' f1
-
-
-Mesmo que isto...
--}
-
-
-ex3 = let t = toZipper examplePicoC
-          Just f1 = down' t
-          Just attrib = down' f1
-          Just rattrib = right attrib
-          Just ite = down' rattrib 
-          --(...)
-          in getHole attrib :: Maybe Inst
-
-
-alteraLista :: [Int]
-alteraListaS = 
-    let listaZipper = toZipper lista
-        Just listaNova = applyTp (full_tdTP step) listaZipper
-             where step = idTP `adhocTP` alteraDois
-    in
-        fromZipper listaNova
-
-alteraDois :: Int -> Maybe Int
-alteraDois 2 = Just 12
-alteraDois x = Just x
-
-
-
---etiquetaVars example
-etiquetaVars :: PicoC -> PicoC
-etiquetaVars p = 
-    let pZipper = toZipper p
-        Just newP = applyTp (full_tdTP step) pZipper
-        step = idTP `adhocTP` etiqueta `adhocTP` etiquetaAtrib
-    in fromZipper newP
-
-etiqueta :: Exp -> Maybe Exp
-etiqueta (Var s) = Just (Var ("v_" ++ s))
-etiqueta x = Just x
-
-etiquetaAtrib :: Inst -> Maybe Inst
-etiquetaAtrib (Atrib s e) = Just (Atrib ("v_" ++ s) e)
-etiquetaAtrib x = Just x
-
-
-
---etiquetaVars2 examplePicoC
-etiquetaVars2 :: PicoC -> PicoC
-etiquetaVars2 p = 
-    let pZipper = toZipper p
-        Just newP = applyTp (full_tdTP step) pZipper
-        step = idTP `adhocTP` etiquetaString
-    in fromZipper newP
-
-etiquetaString :: String -> Maybe String
-etiquetaString s = Just ("v_" ++ s)       -- Loop infinito
-etiquetaString x = Just x
-
-
-
-
-
-etiquetaVars3 :: PicoC -> PicoC
-etiquetaVars3 p = 
-    let pZipper = toZipper p
-        Just newP = applyTp (full_buTP step) pZipper
-        step = idTP `adhocTP` etiqueta `adhocTP` etiquetaAtrib
-    in fromZipper newP
-
---once_bu não faz nada porque só aplica o step uma vez. Parou porque o tipo de dados das etiquetas é Maybe e devolveu Just qualquer coisa
 
