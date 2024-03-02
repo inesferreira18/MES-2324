@@ -29,5 +29,10 @@ test7 = "while (margem < 30) { margem = margem + 1; } \
 test8 :: String
 test8 = "int x = 2*1;string st; st = ola; bool y; int x = x + 0 + 0; y=True;"
 
---test9 :: String
---test9 = "if(i + x < 3)then{while(i < 7){i=i-1;}}else{c = 0;}" 
+test9 :: String
+test9 = "if (margem > 30 && margem <= 50) \
+       \ then { margem = 4 * 23 + 3 ; } \
+       \ else { margem = 0; }\n\n "
+
+--test10 :: String
+--test10 = "if(i + x < 3)then{while(i < 7){i=i-1;}}else{c = 0;}" 

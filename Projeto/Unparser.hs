@@ -10,16 +10,6 @@ import Control.Concurrent (Chan)
 --instance Show PicoC where
 --    show = Unparser
 
---unparser :: PicoC -> String
---unparser = upExp1
-
-
--- (Add (Const 3) (Div (Const 5) (Const 5)))
--- (Div (Add (Const 3) (Const 5)) (Const 5))
--- (GreaterEqual (Add (Const 3) (Const 5)) (Sub (Const 2) (Var "aux")))
--- PicoC [DeclAtrib Int "margem" (Const 0),While (Less (Const 2) (Const 3)) [Atrib "margem" (Add (Mult (Const 4) (Const 23)) (Const 3))],ITE (Greater (Const 5) (Const 2)) [DeclAtrib Int "mam" (Add (Const 5) (Const 2))] [Atrib "costa" (Const 3)]]
--- And (Equal (Const 2) (Const 5)) (And (Less (Const 2) (Const 10)) (GreaterEqual (Const 3) (Const 6)))
-
 upPicoC :: PicoC -> String
 upPicoC (PicoC b) = upBlocoC b
 

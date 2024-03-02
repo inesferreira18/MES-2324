@@ -82,11 +82,11 @@ pAtrib = f <$> pNomes <*> symbol' '=' <*> pExp1
        where f a b c = Atrib a c
 
 pWhile :: Parser Inst
-pWhile = f <$> token' "while" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> pBlocoC
+pWhile = f <$> token' "while" <*> symbol' '(' <*> pExpLogicos <*> symbol' ')' <*> pBlocoC
     where f a b c d e = While c e
 
 pITE:: Parser Inst
-pITE = f <$> token' "if" <*> symbol' '(' <*> pExpEq <*> symbol' ')' <*> token' "then" <*> pBlocoC <*> token' "else" <*> pBlocoC
+pITE = f <$> token' "if" <*> symbol' '(' <*> pExpLogicos <*> symbol' ')' <*> token' "then" <*> pBlocoC <*> token' "else" <*> pBlocoC
     where f a b c d e g h i = ITE c g i
 
 pType :: Parser Type
@@ -200,22 +200,3 @@ ast = Add (Const 3) (Div (Var "aux1") (Const 5))
 
 ast4 :: Exp
 ast4 = Div (Add (Const 3) (Const 7)) (Const 5)
-
-
-
-
-{-
-ghci> opt ast3
-Add (Add (Const (-4)) (Const 4)) (Const 5)
-ghci> opt $ opt ast3
-Add (Const 0) (Const 5)
-ghci> opt $ opt $ opt ast3
-Const 5
-ghci> opt $ opt $ opt $ opt ast3
-Const 5
-
-Ponto Fixo!
--}
-
-
-
