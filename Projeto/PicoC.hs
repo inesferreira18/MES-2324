@@ -1,12 +1,11 @@
 module PicoC where
 
-import Parser
 import Prelude hiding ((<*>), (<$>))
 import Data.Char (isLower)
 import Data.Maybe
 import Data.Data
-import Data.Kind ()
 
+import Parser
 import Tests
 
 data PicoC = PicoC [Inst]

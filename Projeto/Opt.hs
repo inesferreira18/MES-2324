@@ -2,10 +2,9 @@ module Opt where
 
 import Library.StrategicData (StrategicData)
 import Library.Ztrategic
-import Data.Fixed (Pico)
+import Data.Maybe (Maybe (Just))
 
 import PicoC
-import Data.Maybe (Maybe (Just))
 
 --------------------------------------------------------
 -- Optimization Function
