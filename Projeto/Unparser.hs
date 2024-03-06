@@ -16,7 +16,7 @@ upPicoC (PicoC funcs) = upFuncs funcs
 upFuncs :: [Func] -> String
 upFuncs [] = ""
 upFuncs [h] = upFunc h
-upFuncs (h:t) = upFunc h ++ " \n " ++ upFuncs t
+upFuncs (h:t) = upFunc h ++ "  " ++ upFuncs t
 
 upFunc :: Func -> String
 upFunc (Func t s a i) = upType t ++ " " ++ s ++ "(" ++ upArgs a ++ ") { " ++ upBlocoC i ++ " }"

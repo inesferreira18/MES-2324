@@ -6,3 +6,4 @@ Projeto.cabal
 package.yaml
 stack.yaml
 stack.yaml.lock
+syz-0.2.0.0/

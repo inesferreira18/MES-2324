@@ -1,5 +1,8 @@
 module Tests where
 
+test0 :: String
+test0 = "void main(){x = 1 * 0; for(;x<2;){int aa;}}"
+
 test1 :: String
 test1 = "char calcula(){int aux=0 / 2;\n\n\nint aux = 0 / 2;}"
 
@@ -56,4 +59,4 @@ test16 :: String
 test16 = "int main(){if(3<5) {string x= 2; if (y<x){a = func2(c);}} return a + 2; }   void func(int a) {x= y+4;}"
 
 test17:: String
-test17 = "int main(){for(int i=0, j=1;i<10;i = i+1){ while(i<2){x=2+s; if(2<3) then {x=2;} else {x=3;}}}}"
+test17 = "int main(){for(int i=0, j=1;i<10;i = i+1){ while(i<2){x=2+s;}}}}"

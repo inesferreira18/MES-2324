@@ -8,20 +8,22 @@ import Data.Char (isLower)
 import Data.Maybe
 import Data.Data
 
+import Data.Generics.Zipper
+
 import Parser
 import Tests
 
 data PicoC = PicoC [Func]
-           deriving Show
+           deriving (Show, Data)
 
 data Func = Func Type String [Arg] [Inst]
-          deriving Show
+          deriving (Show,Data)
 
 data Arg = Arg Type String
-         deriving Show
+         deriving (Show,Data)
 
 data ArgCall = ArgCall String
-         deriving Show
+         deriving (Show,Data)
 
 data Inst = Decl Type String           
           | DeclAtrib Type String Exp 
@@ -33,7 +35,7 @@ data Inst = Decl Type String
           | ITE Exp BlocoC BlocoC
           | CallFunc String [ArgCall]
           | Return Exp
-          deriving Show
+          deriving (Show,Data)
 
 type BlocoC = [Inst]
 
@@ -42,7 +44,7 @@ data Type = Int
           | String
           | Bool
           | Void
-          deriving Show
+          deriving (Show,Data)
 
 data Exp = Add Exp Exp
          | Sub Exp Exp
@@ -60,7 +62,7 @@ data Exp = Add Exp Exp
          | And Exp Exp
          | Or Exp Exp
          | Not Exp
-         deriving Show
+         deriving (Show,Data)
 
 
 pPicoC :: Parser PicoC
