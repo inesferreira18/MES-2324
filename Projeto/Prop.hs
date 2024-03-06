@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-overlapping-patterns #-}
 module Prop where
 
 import PicoC
@@ -12,13 +13,31 @@ instance Eq PicoC where
   (PicoC code1) == (PicoC code2) = code1 == code2
   _ == _ = False
 
+instance Eq Func where
+  (Func t1 s1 a1 i1) == (Func t2 s2 a2 i2) = t1 == t2 && s1 == s2 && a1 == a2 && i1 == i2
+  _ == _ = False
+
+instance Eq Arg where
+  (Arg t1 s1) == (Arg t2 s2) = t1 == t2 && s1 == s2
+  _ == _ = False
+
+instance Eq ArgCall where
+  (ArgCall s1) == (ArgCall s2) = s1 == s2
+  _ == _ = False
+
 instance Eq Inst where
   (DeclAtrib t1 a1 exp1) == (DeclAtrib t2 a2 exp2) = t1 == t2 && a1 == a2 && exp1 == exp2
   (Decl t1 a1) == (Decl t2 a2) = t1 == t2 && a1 == a2
   (Atrib a1 exp1) == (Atrib a2 exp2) = a1 == a2 && exp1 == exp2
+  (DeclAtribFuncCall t1 a1 i1) == (DeclAtribFuncCall t2 a2 i2) = t1 == t2 && a1 == a2 && i1 == i2
+  (AtribFuncCall a1 i1) == (AtribFuncCall a2 i2) = a1 == a2 && i1 == i2
   (ITE exp1 tb1 eb1) == (ITE exp2 tb2 eb2) = exp1 == exp2 && tb1 == tb2 && eb1 == eb2
   (While exp1 b1) == (While exp2 b2) = exp1 == exp2 && b1 == b2
-  _ == _ = True
+  (For init1 cond1 inc1 b1) == (For init2 cond2 inc2 b2) = init1 == init2 && cond1 == cond2 && inc1 == inc2 && b1 == b2
+  (CallFunc s1 a1) == (CallFunc s2 a2) = s1 == s2 && a1 == a2
+  (Return exp1) == (Return exp2) = exp1 == exp2
+  _ == _ = False
+-- _ == _ = True
 
 instance Eq Type where
   Int == Int = True
@@ -44,6 +63,7 @@ instance Eq Exp where
   (GreaterEqual e1 e2) == (GreaterEqual e3 e4) = e1 == e3 && e2 == e4
   (And e1 e2) == (And e3 e4) = e1 == e3 && e2 == e4
   (Or e1 e2) == (Or e3 e4) = e1 == e3 && e2 == e4
+  (Not e1) == (Not e2) = e1 == e2
   _ == _ = False
 
 

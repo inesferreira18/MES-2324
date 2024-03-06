@@ -2,7 +2,8 @@ import Unparser
 import Parser
 import PicoC
 import Tests
-import Opt
+--import Opt
+import Prop
 
 
 -- Parser
@@ -14,8 +15,8 @@ unparse :: PicoC -> String
 unparse = upPicoC
 
 -- Optimazations
-optimazations:: PicoC -> PicoC
-optimazations = opt
+--optimazations:: PicoC -> PicoC
+--optimazations = opt
 
-parseWithOpt :: String -> PicoC
-parseWithOpt s = opt (parse s)
+--parseWithOpt :: String -> PicoC
+--parseWithOpt s = opt (parse s)

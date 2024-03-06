@@ -62,6 +62,9 @@ optEq _ = Nothing
 optLoop :: Inst -> Maybe Inst
 optLoop (While (Const 0) b) = Just (While (Boolean False) b)
 optLoop (While (Const _) b) = Just (While (Boolean True) b)
+optLoop (For r1 (Const 0) r3 r4) = Just (For r1 (Boolean False) r3 r4)
+optLoop (For r1 (Const _) r3 r4) = Just (For r1 (Boolean True) r3 r4)
+optLoop (For [] r2 [] r4) = Just (While r2 r4)
 optLoop _ = Nothing
 
 -- Conditionals optimization

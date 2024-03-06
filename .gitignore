@@ -1,0 +1,8 @@
+.stack-work/
+Library/
+dist-newstyle/
+Aula.cabal
+Projeto.cabal
+package.yaml
+stack.yaml
+stack.yaml.lock
