@@ -20,3 +20,5 @@ optimazations = opt
 
 parseWithOpt :: String -> PicoC
 parseWithOpt s = opt (parse s)
+
+-- Tests Generator
