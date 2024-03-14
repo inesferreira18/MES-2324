@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Eta reduce" #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 module PicoC where
 
 import Prelude hiding ((<*>), (<$>))

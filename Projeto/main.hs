@@ -4,7 +4,8 @@ import PicoC
 import Tests
 import Opt
 import Prop
-
+import TestGenerator
+import Test.QuickCheck
 
 -- Parser
 parse :: String -> PicoC
@@ -16,9 +17,9 @@ unparse = upPicoC
 
 -- Optimazations
 optimazations:: PicoC -> PicoC
-optimazations = opt
+optimazations = optIM
 
 parseWithOpt :: String -> PicoC
-parseWithOpt s = opt (parse s)
+parseWithOpt s = optIM (parse s)
 
 -- Tests Generator

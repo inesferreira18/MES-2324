@@ -1,10 +1,26 @@
+module TestGenerator where
+
 import Test.QuickCheck
 
 import PicoC
 
-genDia :: Gen Int
-genDia = elements [1..31]
 
--- sample genDia
+-- Type Generator
+genType :: Gen Type
+genType = elements [Int, Char, String, Bool, Void]
 
--- tem uma parte nos slides
+genInt :: Gen Int
+genInt = choose (0, 100)
+
+genChar :: Gen Char
+genChar = elements (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ [' ', '\n', '\t'])
+
+genString :: Gen String
+genString = listOf genChar -- Put a size limit?????????
+
+genBool :: Gen Bool
+genBool = choose (False, True)
+
+
+
+-- 
