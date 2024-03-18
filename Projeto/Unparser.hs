@@ -19,12 +19,12 @@ upFuncs [h] = upFunc h
 upFuncs (h:t) = upFunc h ++ "  " ++ upFuncs t
 
 upFunc :: Func -> String
-upFunc (Func t s a i) = upType t ++ " " ++ s ++ "(" ++ upArgs a ++ ") { " ++ upBlocoC i ++ " }"
+upFunc (Func t s a i) = upType t ++ " " ++ s ++ "(" ++ upArgs a ++ "){ " ++ upBlocoC i ++ " }"
 
 upArgs :: [Arg] -> String
 upArgs [] = ""
 upArgs [h] = upArg h
-upArgs (h:t) = upArg h ++ ", " ++ upArgs t
+upArgs (h:t) = upArg h ++ "," ++ upArgs t
 
 upArg :: Arg -> String
 upArg (Arg t s) = upType t ++ " " ++ s
@@ -35,7 +35,7 @@ upFuncCall (CallFunc s a) = s ++ "(" ++ upArgsCall a ++ ")"
 upArgsCall :: [ArgCall] -> String
 upArgsCall [] = ""
 upArgsCall [h] = upArgCall h
-upArgsCall (h:t) = upArgCall h ++ ", " ++ upArgsCall t
+upArgsCall (h:t) = upArgCall h ++ "," ++ upArgsCall t
 
 upArgCall :: ArgCall -> String
 upArgCall (ArgCall s) = s
@@ -48,28 +48,29 @@ upBlocoC (h:t) = upInst h ++ " " ++ upBlocoC t
 upForVars :: [Inst] -> String
 upForVars [] = ""
 upForVars [h] = upForVar h
-upForVars (h:t) = upForVar h ++ ", " ++ upForVars t
+upForVars (h:t) = upForVar h ++ "," ++ upForVars t
 
 upForVar :: Inst -> String
-upForVar (Atrib var exp) = var ++ " = " ++ upExp1 exp 
-upForVar (DeclAtrib t var exp) = upType t ++ " " ++ var ++ " = " ++ upExp1 exp
+upForVar (Atrib var exp) = var ++ "=" ++ upExp exp 
+upForVar (DeclAtrib t var exp) = upType t ++ " " ++ var ++ "=" ++ upExp exp
 --upForVar (Decl t var) = upType t ++ " " ++ var
 
 upIf :: Inst -> String
-upIf (ITE exp b1 []) = "if (" ++ upExpLogicos exp ++ ") { " ++ upBlocoC b1 ++ " }"
-upIf (ITE exp b1 b2) = "if (" ++ upExpLogicos exp ++ ") then { " ++ upBlocoC b1 ++ " } else { " ++ upBlocoC b2 ++ " }"
+upIf (ITE exp b1 []) = "if(" ++ upExp exp ++ ") {" ++ upBlocoC b1 ++ "}"
+upIf (ITE exp b1 b2) = "if(" ++ upExp exp ++ ") then{" ++ upBlocoC b1 ++ " } else{" ++ upBlocoC b2 ++ "}"
 
 
 upInst :: Inst -> String
-upInst (Atrib var exp) = var ++ " = " ++ upExp1 exp ++ ";"
-upInst (DeclAtrib t var exp) = upType t ++ " " ++ var ++ " = " ++ upExp1 exp ++ ";"
-upInst (DeclAtribFuncCall t var f) = upType t ++ " " ++ var ++ " = " ++ upFuncCall f ++ ";"
-upInst (AtribFuncCall var f) = var ++ " = " ++ upFuncCall f ++ ";" 
+upInst (Atrib var exp) = var ++ "=" ++ upExp exp ++ ";"
+upInst (DeclAtrib t var exp) = upType t ++ " " ++ var ++ "=" ++ upExp exp ++ ";"
+upInst (DeclAtribFuncCall t var f) = upType t ++ " " ++ var ++ "=" ++ upFuncCall f ++ ";"
+upInst (AtribFuncCall var f) = var ++ "=" ++ upFuncCall f ++ ";" 
 upInst (Decl t var) = upType t ++ " " ++ var ++ ";"
-upInst (While exp b) = "while (" ++ upExpLogicos exp ++ ") { " ++ upBlocoC b ++ " }"
-upInst (For insts1 exp insts2 b) = "for (" ++ upForVars insts1 ++ "; " ++ upExpLogicos exp ++ "; " ++ upForVars insts2 ++ ") { " ++ upBlocoC b ++ " }" 
+upInst (While exp b) = "while(" ++ upExp exp ++ ") {" ++ upBlocoC b ++ "}"
+upInst (For insts1 exp insts2 b) = "for(" ++ upForVars insts1 ++ "; " ++ upExp exp ++ "; " ++ upForVars insts2 ++ ") {" ++ upBlocoC b ++ "}" 
 upInst (ITE exp b1 b2) = upIf (ITE exp b1 b2)
-upInst (Return exp) = "return " ++ upExp1 exp ++ ";"
+upInst (CallFunc f a) = upFuncCall (CallFunc f a) ++ ";"
+upInst (Return exp) = "return " ++ upExp exp ++ ";"
 
 upType :: Type -> String
 upType Int = "int"
@@ -77,34 +78,22 @@ upType Char = "char"
 upType String = "string"
 upType Bool = "bool"
 upType Void = "void"
+ 
 
-upExpLogicos :: Exp -> String
-upExpLogicos (And a b) = upExpEq a ++ " && " ++ upExpLogicos b
-upExpLogicos (Or a b) = upExpEq a ++ " || " ++ upExpLogicos b
-upExpLogicos e = upExpEq e
-
-upExpEq :: Exp -> String
-upExpEq (Equal a b) = upExp1 a ++ " == " ++ upExpEq b
-upExpEq (Greater a b) = upExp1 a ++ " > " ++ upExpEq b
-upExpEq (Less a b) = upExp1 a ++ " < " ++ upExpEq b
-upExpEq (GreaterEqual a b) = upExp1 a ++ " >= " ++ upExpEq b
-upExpEq (LessEqual a b) = upExp1 a ++ " <= " ++ upExpEq b
-upExpEq (Not a) = "!" ++ upExpEq a
-upExpEq e = upExp1 e
-
-upExp1 :: Exp -> String
-upExp1 (Add a b) = upExp0 a ++ " + " ++ upExp1 b
-upExp1 (Sub a b) = upExp0 a ++ " - " ++ upExp1 b
-upExp1 e = upExp0 e
-
-upExp0 :: Exp -> String
-upExp0 (Mult a b) = upFactor a ++ " * " ++ upExp0 b
-upExp0 (Div a b) = upFactor a ++ " / " ++ upExp0 b
-upExp0 e = upFactor e
-
-upFactor :: Exp -> String
-upFactor (Const a) = show a
-upFactor (Var a) = a
-upFactor (Boolean a) = show a
-upFactor e = "(" ++ upExp1 e ++ ")"
-
+upExp :: Exp -> String
+upExp (And a b) = "(" ++ upExp a ++ " && " ++ upExp b ++ ")"
+upExp (Or a b) = "(" ++ upExp a ++ " || " ++ upExp b ++ ")"
+upExp (Equal a b) = "(" ++ upExp a ++ " == " ++ upExp b ++ ")"
+upExp (Greater a b) = "(" ++ upExp a ++ " > " ++ upExp b ++ ")"
+upExp (Less a b) = "(" ++ upExp a ++ " < " ++ upExp b ++ ")"
+upExp (GreaterEqual a b) = "(" ++ upExp a ++ " >= " ++ upExp b ++ ")"
+upExp (LessEqual a b) = "(" ++ upExp a ++ " <= " ++ upExp b ++ ")"
+upExp (Add a b) = "(" ++ upExp a ++ "+" ++ upExp b ++ ")"
+upExp (Sub a b) = "(" ++ upExp a ++ "-" ++ upExp b ++ ")"
+upExp (Mult a b) = "(" ++ upExp a ++ "*" ++ upExp b ++ ")"
+upExp (Div a b) = "(" ++ upExp a ++ "/" ++ upExp b ++ ")"
+upExp (Neg (Const a)) = "-" ++ show a
+upExp (Const a) = show a
+upExp (Var a) = a
+upExp (Boolean a) = show a
+upExp (Not a) = "!" ++ upExp a

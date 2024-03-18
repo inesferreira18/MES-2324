@@ -5,8 +5,7 @@ module TestGenerator where
 import Test.QuickCheck
 
 import PicoC
-import Data.ByteString (length, elem)
-import Control.Monad (Monad(return))
+import Prop
 
 
 -- Type Generator
@@ -17,27 +16,28 @@ genInt :: Gen Int
 genInt = choose (0, 100)
 
 genChar :: Gen Char
-genChar = elements (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'] ++ ['_'])
+genChar = elements (['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9'])
 
 genString :: Gen String
 genString = do
-              length <- choose(1, 10)
-              vectorOf length genChar
+              numChars <- choose (1, 5)
+              vectorOf numChars genChar
 
 genBool :: Gen Bool
 genBool = choose (False, True)
 
 
+
 -- Arg Generator
 genArgs :: Gen [Arg]
 genArgs = do
-            length <- choose(0,5)
-            vectorOf length genArg
+            numArgs <- choose (0,5)
+            vectorOf numArgs genArg
 
 genArg :: Gen Arg
-genArg = do                          
-            tp <- genType
-            h <- elements ['a'..'z']    -- Must be a valid name
+genArg = do
+            tp <- suchThat genType (/= Void)
+            h <- elements ['a'..'z']            -- Must be a valid name (starts with a lowercase letter)
             t <- genString
             return (Arg tp (h:t))
 
@@ -46,8 +46,8 @@ genArg = do
 -- ArgCall Generator
 genArgCalls :: Gen [ArgCall]
 genArgCalls = do
-                length <- choose(0,5)
-                vectorOf length genArgCall
+                numArgs <- choose (0,5)
+                vectorOf numArgs genArgCall
 
 genArgCall :: Gen ArgCall
 genArgCall = do
@@ -58,42 +58,44 @@ genArgCall = do
 
 
 -- Inst Generator
-genInsts :: Int -> Gen [Inst]
-genInsts numInsts = do
-                      length <- choose(0, numInsts)
-                      vectorOf length genInst
+genInsts :: Int -> Int -> Gen [Inst]
+genInsts maxInsts maxExps = do
+                                numInsts <- choose (1, maxInsts)
+                                numExps <- choose (1, maxExps)
+                                vectorOf numInsts (genInst numInsts numExps)
 
-genInst :: Gen Inst
-genInst = oneof [genDecl, genDeclAtrib, genAtrib, genDeclAtribFuncCall, genAtribFuncCall, genWhile, genFor, genITE, genCallFunc, genReturn]
-    
+genInst :: Int -> Int -> Gen Inst
+genInst numInsts numExps = oneof [genDecl, genDeclAtrib numExps, genAtrib numExps,
+                                  genDeclAtribFuncCall, genAtribFuncCall, genWhile numInsts numExps,
+                                  genFor numInsts numExps, genITE numInsts numExps,
+                                  genCallFunc, genReturn numExps]
+
 genDecl :: Gen Inst
 genDecl = do
-            tp <- genType
+            tp <- suchThat genType (/= Void)
             h <- elements ['a'..'z']
             t <- genString
             return (Decl tp (h:t))
 
-genDeclAtrib :: Gen Inst
-genDeclAtrib = do
-                tp <- genType
-                h <- elements ['a'..'z']
-                t <- genString
-                numExps <- choose(0, 1)
-                exp <- genExp numExps
-                return (DeclAtrib tp (h:t) exp)
+genDeclAtrib :: Int -> Gen Inst
+genDeclAtrib numExps = do
+                        tp <- suchThat genType (/= Void)
+                        h <- elements ['a'..'z']
+                        t <- genString
+                        exp <- oneof [genOps numExps, genBoolean]
+                        return (DeclAtrib tp (h:t) exp)
 
-genAtrib :: Gen Inst
-genAtrib = do
-                h <- elements ['a'..'z']
-                t <- genString
-                numExps <- choose(0, 1)
-                exp <- genExp numExps
-                return (Atrib (h:t) exp)
+genAtrib :: Int -> Gen Inst
+genAtrib numExps = do
+                    h <- elements ['a'..'z']
+                    t <- genString
+                    exp <- oneof [genOps numExps, genBoolean]
+                    return (Atrib (h:t) exp)
 
 
 genDeclAtribFuncCall :: Gen Inst
 genDeclAtribFuncCall = do
-                    tp <- genType
+                    tp <- suchThat genType (/= Void)
                     h <- elements ['a'..'z']
                     t <- genString
                     inst <- genCallFunc
@@ -106,31 +108,6 @@ genAtribFuncCall = do
                     inst <- genCallFunc
                     return (AtribFuncCall (h:t) inst)
 
-genWhile :: Gen Inst
-genWhile = do
-            numExps <- choose(0, 1)
-            exp <- genExp numExps
-            insts <- genInsts 1
-            return (While exp insts)
-
-
-genFor :: Gen Inst
-genFor = do
-            init <- oneof [genDeclAtrib, genAtrib]
-            numExps <- choose(0, 1)
-            exp <- genExp numExps
-            inc <- genAtrib
-            insts <- genInsts 1
-            return (For [init] exp [inc] insts)
-
-genITE :: Gen Inst
-genITE = do 
-            numExps <- choose(0, 1)
-            exp <- genExp numExps
-            t <- genInsts 1
-            e <- genInsts 1
-            return (ITE exp t e)
-
 genCallFunc :: Gen Inst
 genCallFunc = do
                 h <- elements ['a'..'z']
@@ -138,62 +115,92 @@ genCallFunc = do
                 args <- genArgCalls
                 return (CallFunc (h:t) args)
 
-genReturn :: Gen Inst
-genReturn = do
-                numExps <- choose(0, 1)
-                exp <- genExp numExps
-                return (Return exp)
+genWhile :: Int -> Int -> Gen Inst
+genWhile numInsts numExps = do
+                                exp <- genExp numExps
+                                insts <- genBlocoC numInsts numExps
+                                return (While exp insts)
 
 
+genFor :: Int -> Int -> Gen Inst
+genFor numInsts numExps = do
+                            init <- oneof [genDeclAtrib numExps, genAtrib numExps]    -- just ints or char
+                            exp <- genExp numExps
+                            inc <- genAtrib numExps                                   -- cannot be aux = True; junt ints or char
+                            insts <- genBlocoC numInsts numExps
+                            return (For [init] exp [inc] insts)
+
+genITE :: Int -> Int -> Gen Inst
+genITE numInsts numExps = do
+                            exp <- genExp numExps
+                            t <- genBlocoC numInsts numExps
+                            e <- genBlocoC numInsts numExps
+                            return (ITE exp t e)
+
+genReturn :: Int -> Gen Inst
+genReturn numExps = do
+                        exp <- genExp numExps
+                        return (Return exp)
+
+
+
+-- BlocoC Generator
+genBlocoC :: Int -> Int -> Gen BlocoC
+genBlocoC numInsts numExps = vectorOf numInsts (genInst numInsts numExps)
 
 
 -- Exp Generator
-instance Arbitrary Exp where          
+instance Arbitrary Exp where
  arbitrary = sized genExp
 
 genExp :: Int -> Gen Exp
-genExp 0 = genOps 0
-genExp n = oneof [genOps n, genBoolean, genGreater n, genLess n, genEqual n, genGreaterEqual n, genLessEqual n, genAnd n, genOr n, genNot n]
+genExp 1 = genOps 1
+genExp n = oneof [genOps n, genBoolean, genGreater n, genLess n, genEqual n, genGreaterEqual n,
+                  genLessEqual n, genAnd n, genOr n, genNot n]
 
 genOps :: Int -> Gen Exp
-genOps 0 = genConst
-genOps n = oneof [genAdd n, genSub n, genMult n, genDiv n, genVar]
+genOps 1 = oneof [genConst, genNeg, genVar]
+genOps n = oneof [genAdd n, genSub n, genMult n, genDiv n]
 
 
 
 genAdd :: Int -> Gen Exp
 genAdd n = do
-            e1 <- genOps (div n 2)
+            e1 <- if even n then genOps (div n 2)
+                            else genOps (div n 2 + 1)
             e2 <- genOps (div n 2)
             return (Add e1 e2)
 
 genSub :: Int -> Gen Exp
 genSub n = do
-            e1 <- genOps (div n 2)
+            e1 <- if even n then genOps (div n 2)
+                            else genOps (div n 2 + 1)
             e2 <- genOps (div n 2)
             return (Sub e1 e2)
 
 genMult :: Int -> Gen Exp
 genMult n = do
-            e1 <- genOps (div n 2)
-            e2 <- genOps (div n 2)
-            return (Mult e1 e2)
+                e1 <- if even n then genOps (div n 2)
+                                else genOps (div n 2 + 1)
+                e2 <- genOps (div n 2)
+                return (Mult e1 e2)
 
 genDiv :: Int -> Gen Exp
 genDiv n = do
-            e1 <- genOps (div n 2)
+            e1 <- if even n then genOps (div n 2)
+                            else genOps (div n 2 + 1)
             e2 <- genOps (div n 2)
             return (Div e1 e2)
 
---genNeg :: Int -> Gen Exp
---genNeg n = do
---            e1 <- genOps (div n 2)
---            return (Neg e1)
-
 genConst :: Gen Exp
 genConst = do
-            x <- arbitrary    -- arbitrary means that the value x can be any value of the type
+            x <- genInt    -- arbitrary means that the value x can be any value of the type
             return (Const x)
+
+genNeg :: Gen Exp
+genNeg = do
+            x <- genInt
+            return (Neg (Const x))
 
 genVar :: Gen Exp
 genVar = do
@@ -206,65 +213,75 @@ genBoolean = Boolean <$> genBool
 
 genGreater :: Int -> Gen Exp
 genGreater n = do
-                e1 <- genExp (div n 2)
+                e1 <- if even n then genExp (div n 2)
+                                else genExp (div n 2 + 1)
                 e2 <- genExp (div n 2)
                 return (Greater e1 e2)
 
 genLess :: Int -> Gen Exp
 genLess n = do
-                e1 <- genExp (div n 2)
+                e1 <- if even n then genExp (div n 2)
+                                else genExp (div n 2 + 1)
                 e2 <- genExp (div n 2)
                 return (Less e1 e2)
 
 genEqual :: Int -> Gen Exp
 genEqual n = do
-                e1 <- genExp (div n 2)
+                e1 <- if even n then genExp (div n 2)
+                                else genExp (div n 2 + 1)
                 e2 <- genExp (div n 2)
                 return (Equal e1 e2)
 
 genGreaterEqual :: Int -> Gen Exp
 genGreaterEqual n = do
-                e1 <- genExp (div n 2)
-                e2 <- genExp (div n 2)
-                return (GreaterEqual e1 e2)
+                        e1 <- if even n then genExp (div n 2)
+                                        else genExp (div n 2 + 1)
+                        e2 <- genExp (div n 2)
+                        return (GreaterEqual e1 e2)
 
 genLessEqual :: Int -> Gen Exp
 genLessEqual n = do
-                e1 <- genExp (div n 2)
-                e2 <- genExp (div n 2)
-                return (LessEqual e1 e2)
+                    e1 <- if even n then genExp (div n 2)
+                                    else genExp (div n 2 + 1)
+                    e2 <- genExp (div n 2)
+                    return (LessEqual e1 e2)
 
-genAnd:: Int -> Gen Exp 
+genAnd:: Int -> Gen Exp
 genAnd n = do
-            e1 <- genExp (div n 2)
+            e1 <- if even n then genExp (div n 2)
+                            else genExp (div n 2 + 1)
             e2 <- genExp (div n 2)
             return (And e1 e2)
 
-genOr:: Int -> Gen Exp 
+genOr:: Int -> Gen Exp
 genOr n = do
-            e1 <- genExp (div n 2)
+            e1 <- if even n then genExp (div n 2)
+                            else genExp (div n 2 + 1)
             e2 <- genExp (div n 2)
             return (Or e1 e2)
-            
-genNot :: Int -> Gen Exp 
+
+genNot :: Int -> Gen Exp
 genNot n = do
-            e1 <- genExp (div n 2)
+            e1 <- genExp n          -- !2
             return (Not e1)
 
 
 
 -- Func Generator
-genFunc :: Gen Func
-genFunc = do
-            tp <- genType
-            h <- elements ['a'..'z'] 
-            t <- genString
-            args <- genArgs
-            insts <- genInsts
-            return (Func tp (h:t) args insts)
+genFunc :: Int -> Int -> Gen Func
+genFunc maxInsts maxExps = do
+                            fType <- genType
+                            h <- elements ['a'..'z']
+                            t <- genString
+                            args <- genArgs
+                            insts <- genInsts maxInsts maxExps
+                            return (Func fType (h:t) args insts)
 
+
+
+-- PicoC Generator
 genPicoC :: Int -> Int -> Int -> Gen PicoC
 genPicoC maxFuncs maxInsts maxExps = do
-                                        numFuncs <- choose(1, maxFuncs)
+                                        numFuncs <- choose (1, maxFuncs)
                                         funcs <- vectorOf numFuncs (genFunc maxInsts maxExps)
                                         return (PicoC funcs)

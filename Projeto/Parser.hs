@@ -101,10 +101,14 @@ pAs =  f <$> symbol 'a'
             | dig Digitos
 -}
 
+pInt2 :: Parser Int
+pInt2 = f <$> espacos <*> pSinal <*> pDigitos <*> espacos
+      where f _ '-' d _ = read ('-':d)            
+            f _ _ d _ = read d
+
 pInt :: Parser Int
-pInt = f <$> espacos <*> pSinal <*> pDigitos <*> espacos
-     where f _ '-' d _ = read ('-':d)            
-           f _ _ d _ = read d
+pInt = f <$> espacos <*> pDigitos <*> espacos
+      where f _ a _ = read a
 
 pSinal :: Parser Char
 pSinal = symbol '+'
