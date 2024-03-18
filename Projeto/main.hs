@@ -23,3 +23,16 @@ parseWithOpt :: String -> PicoC
 parseWithOpt s = optIM (parse s)
 
 -- Tests Generator
+testGen :: Int -> Int -> Int -> IO PicoC
+testGen numFuncs numInsts maxExps = generate (genPicoC numFuncs numInsts maxExps)
+
+unparseTest :: IO PicoC -> IO ()
+unparseTest ioPicoC = do
+                        picoC <- ioPicoC
+                        let str = unparse picoC
+                        putStrLn str
+
+
+-- Refactoring
+refactorings :: PicoC -> PicoC
+refactorings = refactor

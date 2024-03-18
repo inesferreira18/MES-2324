@@ -188,7 +188,7 @@ pITE = f <$> token' "if" <*> symbol' '(' <*> pExpCond <*> symbol' ')' <*> token'
           g a b c d e = ITE c e []
 
 pReturn :: Parser Inst
-pReturn = f <$> token' "return" <*> pExpLogicos
+pReturn = f <$> token' "return" <*> pExpCond
     where f a b = Return b
 
 pType :: Parser Type

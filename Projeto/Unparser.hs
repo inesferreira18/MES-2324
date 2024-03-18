@@ -96,4 +96,4 @@ upExp (Neg (Const a)) = "-" ++ show a
 upExp (Const a) = show a
 upExp (Var a) = a
 upExp (Boolean a) = show a
-upExp (Not a) = "!" ++ upExp a
+upExp (Not a) = "(!" ++ upExp a ++ ")"

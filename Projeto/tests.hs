@@ -71,7 +71,10 @@ test20 :: String
 test20 = "void main(){ z = x - -1; return 2 <= 3 && 3 <= 4; }"
 
 test21 :: String
-test21 = "void main(){ while(((4 <= 5) == 1) && !(5 <= 10)){ return 2; }}"
+test21 = "void main(){while(((4<=5)==1) && !(5 <= 10)){return 2;}}"
 
 test22 :: String
-test22 = "void main(){ while(!((4 <= 87) < -76) > (77 || 63)){ return 2; }}"
+test22 = "void main(){while(!((4<=87)<-76) > (77||63)){return 2;}}"
+
+test23 :: String
+test23 = "void main(){while((!(4<=87))<3){return 2;}}"

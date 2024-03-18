@@ -71,5 +71,6 @@ instance Eq Exp where
 -- Property Testing --
 ----------------------
 
+-- Test if the unparser is the inverse of the parser
 propPicoC :: PicoC -> Bool
 propPicoC ast = ast == fst (last $ pPicoC (upPicoC ast))
