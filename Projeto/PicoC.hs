@@ -174,21 +174,21 @@ pForIncs =  f <$> pAtrib
               g a b c = a:c
 
 pWhile :: Parser Inst
-pWhile = f <$> token' "while" <*> symbol' '(' <*> pExpCond <*> symbol' ')' <*> pBlocoC
+pWhile = f <$> token' "while" <*> symbol' '(' <*> pExpLogicos <*> symbol' ')' <*> pBlocoC
     where f a b c d e = While c e
 
 pFor :: Parser Inst
-pFor = f <$> token' "for" <*> symbol' '(' <*> pForInits <*> symbol' ';' <*> pExpCond <*> symbol' ';' <*> pForIncs <*> symbol' ')' <*> pBlocoC
+pFor = f <$> token' "for" <*> symbol' '(' <*> pForInits <*> symbol' ';' <*> pExpLogicos <*> symbol' ';' <*> pForIncs <*> symbol' ')' <*> pBlocoC
     where f a b c d e f g h i  = For c e g i
 
 pITE:: Parser Inst
-pITE = f <$> token' "if" <*> symbol' '(' <*> pExpCond <*> symbol' ')' <*> token' "then" <*> pBlocoC <*> token' "else" <*> pBlocoC
-    <|> g <$> token' "if" <*> symbol' '(' <*> pExpCond <*> symbol' ')' <*> pBlocoC
+pITE = f <$> token' "if" <*> symbol' '(' <*> pExpLogicos <*> symbol' ')' <*> token' "then" <*> pBlocoC <*> token' "else" <*> pBlocoC
+    <|> g <$> token' "if" <*> symbol' '(' <*> pExpLogicos <*> symbol' ')' <*> pBlocoC
     where f a b c d e g h i = ITE c g i
           g a b c d e = ITE c e []
 
 pReturn :: Parser Inst
-pReturn = f <$> token' "return" <*> pExpCond
+pReturn = f <$> token' "return" <*> pExpLogicos
     where f a b = Return b
 
 pType :: Parser Type
@@ -203,43 +203,14 @@ pType = f <$> token' "int"
           i a = Bool
           j a = Void
 
-
-pExpCond :: Parser Exp
-pExpCond =  f <$> pMultiCond <*> token' "&&" <*> pExpCond
-        <|> g <$> pMultiCond <*> token' "||" <*> pExpCond
-        <|> h <$> pMultiCond <*> token' "==" <*> pExpCond
-        <|> i <$> pMultiCond <*> symbol' '>' <*> pExpCond
-        <|> j <$> pMultiCond <*> symbol' '<' <*> pExpCond
-        <|> k <$> pMultiCond <*> token' ">=" <*> pExpCond
-        <|> l <$> pMultiCond <*> token' "<=" <*> pExpCond
-        <|> m <$> token' "!" <*> pExpCond
-        <|> n <$> pMultiCond
-        where f a b c = And a c
-              g a b c = Or a c
-              h a b c = Equal a c
-              i a b c = Greater a c
-              j a b c = Less a c
-              k a b c = GreaterEqual a c
-              l a b c = LessEqual a c   
-              m a b = Not b
-              n a = a
-
-pMultiCond :: Parser Exp
-pMultiCond =  f <$> symbol' '(' <*> pExpCond <*> symbol' ')'
-          <|> g <$> pExpLogicos
-          where f a b c = b
-                g a = a
-
-
-
 pExpLogicos :: Parser Exp
 pExpLogicos =  f <$> pExpEq <*> token' "&&" <*> pExpLogicos
            <|> g <$> pExpEq <*> token' "||" <*> pExpLogicos
---           <|> h <$> token' "!" <*> pExpLogicos
+           <|> h <$> token' "!" <*> pExpLogicos
            <|> i <$> pExpEq
            where f a b c = And a c
                  g a b c = Or a c
---                 h a b = Not b
+                 h a b = Not b
                  i a = a
 
 pExpEq :: Parser Exp
@@ -278,7 +249,7 @@ pFactor =  f1 <$> symbol' '-' <*> pInt
        <|> g <$> pTrue
        <|> h <$> pFalse
        <|> i <$> pNomes
-       <|> j <$> symbol' '(' <*> pExp1 <*> symbol' ')'
+       <|> j <$> symbol' '(' <*> pExpLogicos <*> symbol' ')'
        where f1 a b = Neg (Const b)
              f2 a = Const a
              g a = Boolean True

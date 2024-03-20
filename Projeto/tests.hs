@@ -65,7 +65,7 @@ test18:: String
 test18 = "int main(){for(int i=0, j=1;i<10;i = i+1){ getIndex(a,b,c); }}}"
 
 test19 :: String
-test19 = "void main(){x = -1; y = 2 - 3; z = x - -1;}"
+test19 = "void main(){x = -1; y = 2 - 3; z = x - (-1);}"
 
 test20 :: String
 test20 = "void main(){ z = x - -1; return 2 <= 3 && 3 <= 4; }"
@@ -77,4 +77,13 @@ test22 :: String
 test22 = "void main(){while(!((4<=87)<-76) > (77||63)){return 2;}}"
 
 test23 :: String
-test23 = "void main(){while((!(4<=87))<3){return 2;}}"
+test23 = "void main(){while((!(4<=87))<3){funcAA();}}"
+
+test24 :: String
+test24 = "void main(){while((0 || 1<3) && 0){x = x - (-1); y = -1;}}"
+
+test25 :: String
+test25 = "void main(){while((0 || 1<3) && !0){y = -1;}}"
+
+test26 :: String
+test26 = "void main(){if(funcRes) then {return True;}else {return False;}}"

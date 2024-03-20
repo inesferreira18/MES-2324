@@ -82,14 +82,14 @@ genDeclAtrib numExps = do
                         tp <- suchThat genType (/= Void)
                         h <- elements ['a'..'z']
                         t <- genString
-                        exp <- oneof [genOps numExps, genBoolean]
+                        exp <- genOps numExps
                         return (DeclAtrib tp (h:t) exp)
 
 genAtrib :: Int -> Gen Inst
 genAtrib numExps = do
                     h <- elements ['a'..'z']
                     t <- genString
-                    exp <- oneof [genOps numExps, genBoolean]
+                    exp <- genOps numExps
                     return (Atrib (h:t) exp)
 
 
@@ -155,11 +155,11 @@ instance Arbitrary Exp where
 
 genExp :: Int -> Gen Exp
 genExp 1 = genOps 1
-genExp n = oneof [genOps n, genBoolean, genGreater n, genLess n, genEqual n, genGreaterEqual n,
+genExp n = oneof [genOps n, genGreater n, genLess n, genEqual n, genGreaterEqual n,
                   genLessEqual n, genAnd n, genOr n, genNot n]
 
 genOps :: Int -> Gen Exp
-genOps 1 = oneof [genConst, genNeg, genVar]
+genOps 1 = oneof [genConst, genNeg, genVar, genBoolean]
 genOps n = oneof [genAdd n, genSub n, genMult n, genDiv n]
 
 
@@ -194,7 +194,7 @@ genDiv n = do
 
 genConst :: Gen Exp
 genConst = do
-            x <- genInt    -- arbitrary means that the value x can be any value of the type
+            x <- genInt         -- arbitrary means that the value x can be any value of the type
             return (Const x)
 
 genNeg :: Gen Exp
@@ -262,7 +262,7 @@ genOr n = do
 
 genNot :: Int -> Gen Exp
 genNot n = do
-            e1 <- genExp n          -- !2
+            e1 <- genExp n
             return (Not e1)
 
 

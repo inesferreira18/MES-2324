@@ -15,12 +15,18 @@ parse p = fst $ last $ pPicoC p
 unparse :: PicoC -> String
 unparse = upPicoC
 
--- Optimazations
-optimazations:: PicoC -> PicoC
-optimazations = optIM
+-- Optimizations
+optimizationsTD:: PicoC -> PicoC
+optimizationsTD = optTD
 
-parseWithOpt :: String -> PicoC
-parseWithOpt s = optIM (parse s)
+optimizationsIM:: PicoC -> PicoC
+optimizationsIM = optIM
+
+parseWithOptTD :: String -> PicoC
+parseWithOptTD s = optTD (parse s)
+
+parseWithOptIM :: String -> PicoC
+parseWithOptIM s = optIM (parse s)
 
 -- Tests Generator
 testGen :: Int -> Int -> Int -> IO PicoC

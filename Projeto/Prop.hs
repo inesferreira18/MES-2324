@@ -37,7 +37,6 @@ instance Eq Inst where
   (CallFunc s1 a1) == (CallFunc s2 a2) = s1 == s2 && a1 == a2
   (Return exp1) == (Return exp2) = exp1 == exp2
   _ == _ = False
--- _ == _ = True
 
 instance Eq Type where
   Int == Int = True
