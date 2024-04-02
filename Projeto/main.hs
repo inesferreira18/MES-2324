@@ -19,11 +19,12 @@ unparse = upPicoC
 optimizationsTD:: PicoC -> PicoC
 optimizationsTD = optTD
 
-optimizationsIM:: PicoC -> PicoC
-optimizationsIM = optIM
-
 parseWithOptTD :: String -> PicoC
 parseWithOptTD s = optTD (parse s)
+
+
+optimizationsIM:: PicoC -> PicoC
+optimizationsIM = optIM
 
 parseWithOptIM :: String -> PicoC
 parseWithOptIM s = optIM (parse s)
@@ -38,7 +39,9 @@ unparseTest ioPicoC = do
                         let str = unparse picoC
                         putStrLn str
 
-
 -- Refactoring
-refactorings :: PicoC -> PicoC
-refactorings = refactor
+parseWithRefactoring :: String -> PicoC
+parseWithRefactoring s = refactor (parse s)
+
+refactoring :: PicoC -> PicoC
+refactoring = refactor

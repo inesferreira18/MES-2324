@@ -7,6 +7,8 @@ import Test.QuickCheck
 import PicoC
 import Prop
 
+instance Arbitrary PicoC where
+  arbitrary = genPicoC 1 1 2   -- genPicoC numFuncs numInsts maxExps
 
 -- Type Generator
 genType :: Gen Type
@@ -152,6 +154,7 @@ genBlocoC numInsts numExps = vectorOf numInsts (genInst numInsts numExps)
 -- Exp Generator
 instance Arbitrary Exp where
  arbitrary = sized genExp
+ --arbitrary = shrink genExp 
 
 genExp :: Int -> Gen Exp
 genExp 1 = genOps 1

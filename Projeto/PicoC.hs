@@ -5,7 +5,6 @@
 module PicoC where
 
 import Prelude hiding ((<*>), (<$>))
-import Data.Char (isLower)
 import Data.Maybe
 import Data.Data
 
@@ -13,7 +12,6 @@ import Data.Generics.Zipper
 
 import Parser
 import Tests
-import Parser (symbol')
 
 data PicoC = PicoC [Func]
            deriving (Show, Data)
@@ -27,11 +25,11 @@ data Arg = Arg Type String
 data ArgCall = ArgCall String
          deriving (Show,Data)
 
-data Inst = Decl Type String           
-          | DeclAtrib Type String Exp 
+data Inst = Decl Type String
+          | DeclAtrib Type String Exp
           | Atrib String Exp
-          | DeclAtribFuncCall Type String Inst  
-          | AtribFuncCall String Inst                              
+          | DeclAtribFuncCall Type String Inst
+          | AtribFuncCall String Inst
           | While Exp BlocoC
           | For [Inst] Exp [Inst] BlocoC        -- for (int i=0, j=0; i < 10; i++, j++ ) { ... }
           | ITE Exp BlocoC BlocoC
@@ -102,7 +100,7 @@ pArgsCall = f <$> pArgCall
 
 pArgCall :: Parser ArgCall
 pArgCall = f <$> pNomes
-    where f a  = ArgCall a 
+    where f a  = ArgCall a
 
 pInsts :: Parser [Inst]
 pInsts = zeroOrMore pInst
@@ -112,7 +110,7 @@ pInst =  f  <$> pDeclAtrib <*> symbol' ';' <*> espacos
      <|> f1 <$> pDecl <*> symbol' ';' <*> espacos
      <|> f2 <$> pAtrib <*> symbol' ';' <*> espacos
      <|> g  <$> pWhile <*> espacos
-     <|> h  <$> pFor <*> espacos 
+     <|> h  <$> pFor <*> espacos
      <|> i  <$> pITE <*> espacos
      <|> l  <$> pFuncCall <*> symbol' ';' <*> espacos
      <|> k  <$> pDeclAtribFuncCall <*> symbol' ';' <*> espacos
@@ -160,7 +158,7 @@ pDecl = f <$> pType <*> pNomes
 
 
 pForInits :: Parser [Inst]
-pForInits =  f <$> pAtribs               
+pForInits =  f <$> pAtribs
          <|> g <$> pAtribs <*> symbol' ',' <*> pForInits  -- for(int i=0, j=0; ...)
          <|> succeed []
          where f a = [a]
@@ -228,7 +226,7 @@ pExpEq = f <$> pExp1 <*> token' "==" <*> pExpEq
            k a = a
 
 pExp1 :: Parser Exp
-pExp1 = f <$> pExp0 <*> symbol' '+' <*> pExp1  
+pExp1 = f <$> pExp0 <*> symbol' '+' <*> pExp1
     <|> g <$> pExp0 <*> symbol' '-' <*> pExp1
     <|> h <$> pExp0
     where f a b c = Add a c
@@ -256,53 +254,3 @@ pFactor =  f1 <$> symbol' '-' <*> pInt
              h a = Boolean False
              i a = Var a
              j a b c = b
-
-
-
-
---------------------------------------------------------
--- Eval Function
---------------------------------------------------------
-
--- eval ast [("aux1", 10)]
--- eval (GreaterEqual (Add (Const 3) (Const 5)) (Sub (Const 10) (Var "aux"))) [("aux",2)] -- True
-eval :: Exp -> [(String,Int)] -> Int
-eval (Const i) _ = i
-eval (Var n) c = fromJust (lookup n c)                      -- lookup vai buscar o valor da variável no contexto c; fromjust coverte aquilo que o lookup devolve
-eval (Neg e) c = - (eval e c)
-eval (Add e1 e2) c = eval e1 c + eval e2 c
-eval (Sub e1 e2) c = eval e1 c - eval e2 c
-eval (Mult e1 e2) c = eval e1 c * eval e2 c
-eval (Div e1 e2) c = eval e1 c `div` eval e2 c
-eval (Equal e1 e2) c = fromEnum $ eval e1 c == eval e2 c    -- fromEnum converte um booleano para um inteiro
-eval (Greater e1 e2) c = fromEnum $ eval e1 c > eval e2 c
-eval (Less e1 e2) c = fromEnum $ eval e1 c < eval e2 c
-eval (GreaterEqual e1 e2) c = fromEnum $ eval e1 c >= eval e2 c
-eval (LessEqual e1 e2) c = fromEnum $ eval e1 c <= eval e2 c
-
-
-
-
-
-
-
-
-
--- eval ast2 []
--- eval (opt ast2) []
-ast2 :: Exp
-ast2 = Mult (Add (Const 3) (Const 0)) (Const 5)
-
--- opt ast3
-ast3 :: Exp
-ast3 = Add (Add (Neg (Const 4)) (Const 4)) (Const 5)  -- 5
-
-ast5 :: Exp
-ast5 = GreaterEqual (Const 3) (Const 5)  -- Bool False
-
--- pExp1 "3 + aux1 / 5"
-ast :: Exp
-ast = Add (Const 3) (Div (Var "aux1") (Const 5))
-
-ast4 :: Exp
-ast4 = Div (Add (Const 3) (Const 7)) (Const 5)

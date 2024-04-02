@@ -20,7 +20,7 @@ instance StrategicData Exp
 instance StrategicData a => StrategicData [a]
 
 --------------------------------------------------------
--- Optimization Function
+-- Optimization Functions
 --------------------------------------------------------
 
 -- Main function TopDown
@@ -55,6 +55,12 @@ optOperationsTD (And exp (Const _)) = Just exp                                  
 optOperationsTD (Not (Not exp)) = Just exp                                        -- (!(!a)) -> a
 optOperationsTD (Not (Const 0)) = Just (Const 1)                                  -- (!0) -> true;
 optOperationsTD (Not (Const _)) = Just (Const 0)                                  -- (!1) -> false;
+optOperationsTD (Equal (Const a) (Const b)) = Just (Boolean (a == b))             -- (a == b) -> true/false
+optOperationsTD (Greater (Const a) (Const b)) = Just (Boolean (a > b))            -- (a > b) -> true/false
+optOperationsTD (Less (Const a) (Const b)) = Just (Boolean (a < b))               -- (a < b) -> true/false
+optOperationsTD (GreaterEqual (Const a) (Const b)) = Just (Boolean (a >= b))      -- (a >= b) -> true/false
+optOperationsTD (LessEqual (Const a) (Const b)) = Just (Boolean (a <= b))         -- (a <= b) -> true/false
+optOperationsTD (Equal (Boolean a) (Boolean b)) = Just (Boolean (a == b))         -- (a == b) -> true/false
 optOperationsTD e = Just e
 
 -- Inst optimization
@@ -64,9 +70,12 @@ optInstTD (While (Const _) b) = Just (While (Boolean True) b)              -- wh
 optInstTD (For r1 (Const 0) r3 r4) = Just (For r1 (Boolean False) r3 r4)   -- for (_; 0; _) b -> for (_; false; _) b
 optInstTD (For r1 (Const _) r3 r4) = Just (For r1 (Boolean True) r3 r4)    -- for (_; 1; _) b -> for (_; true; _) b
 optInstTD (For [] r2 [] r4) = Just (While r2 r4)                           -- for (; r2; ) b -> while (r2) b
+optInstTD (For [] r2 r3 r4) = Just (While r2 (r4 ++ r3))                   -- for (; r2; r3) b -> while (r2) r4; r3;     
 optInstTD e = Just e
 
 
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 
 
 -- Main function Innermost
@@ -101,6 +110,12 @@ optOperationsIM (And exp (Const _)) = Just exp
 optOperationsIM (Not (Not exp)) = Just exp                   
 optOperationsIM (Not (Const 0)) = Just (Const 1)             
 optOperationsIM (Not (Const _)) = Just (Const 0)  
+optOperationsIM (Equal (Const a) (Const b)) = Just (Boolean (a == b))            
+optOperationsIM (Greater (Const a) (Const b)) = Just (Boolean (a > b))           
+optOperationsIM (Less (Const a) (Const b)) = Just (Boolean (a < b))              
+optOperationsIM (GreaterEqual (Const a) (Const b)) = Just (Boolean (a >= b))     
+optOperationsIM (LessEqual (Const a) (Const b)) = Just (Boolean (a <= b))
+optOperationsIM (Equal (Boolean a) (Boolean b)) = Just (Boolean (a == b))
 optOperationsIM _ = Nothing
 
 -- Inst optimization
@@ -109,12 +124,17 @@ optInstIM (While (Const 0) b) = Just (While (Boolean False) b)
 optInstIM (While (Const _) b) = Just (While (Boolean True) b)
 optInstIM (For r1 (Const 0) r3 r4) = Just (For r1 (Boolean False) r3 r4)
 optInstIM (For r1 (Const _) r3 r4) = Just (For r1 (Boolean True) r3 r4)
-optInstIM (For [] r2 [] r4) = Just (While r2 r4)   
+optInstIM (For [] r2 [] r4) = Just (While r2 r4)
+optInstIM (For [] r2 r3 r4) = Just (While r2 (r4 ++ r3))                        
 optInstIM _ = Nothing
 
 
 
--- Refactoring
+--------------------------------------------------------
+-- Refactoring Functions
+--------------------------------------------------------
+
+-- Main function Innermost
 refactor :: PicoC -> PicoC
 refactor program = 
                     let pProgram = toZipper program
@@ -123,6 +143,6 @@ refactor program =
                     in fromZipper newProgram
 
 ifRefactor :: Inst -> Maybe Inst
-ifRefactor (ITE (Not cond) b1 b2) = Just (ITE cond b2 b1)                                   -- if (!cond) b1; else b2;                       -> if (cond) b2; else b1;
-ifRefactor (ITE func [Return (Boolean True)] [Return (Boolean False)]) = Just (Return func) -- if ( func() ) return true; else return false; -> return func();
+ifRefactor (ITE (Not cond) b1 b2) = Just (ITE cond b2 b1)                                   -- if (!cond) b1; else b2;                     -> if (cond) b2; else b1;
+ifRefactor (ITE exp [Return (Boolean True)] [Return (Boolean False)]) = Just (Return exp)   -- if ( exp ) return true; else return false;  -> return exp;
 ifRefactor _ = Nothing

@@ -87,3 +87,12 @@ test25 = "void main(){while((0 || 1<3) && !0){y = -1;}}"
 
 test26 :: String
 test26 = "void main(){if(funcRes) then {return True;}else {return False;}}"
+
+test27 :: String
+test27 = "int main() {for(;i<2 && 0;i=i+1){y = 1+1;}}"
+
+test28 :: String
+test28 = "int main() {while(1 == 2){y = 1+1;} return 2;}"
+
+test29 :: String
+test29 = "int main() {if(!(!exp)) then {return True;}else {return False;}}"
