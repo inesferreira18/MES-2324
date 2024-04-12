@@ -70,7 +70,8 @@ instance Eq Exp where
 
 
 ----------------------
--- Property Testing --  
+-- Property Testing --
+-- quickCheck prop_ --  
 ----------------------
 
 -- Test if the unparser is the inverse of the parser
@@ -88,25 +89,3 @@ prop_Strategies ast = optIM ast == optTD ast
 -- Test the commutativity of the optimizations with the refactorings
 prop_OptCommutativeRef :: PicoC -> Bool
 prop_OptCommutativeRef ast = optIM (refactor (optIM ast)) == refactor (optIM ast)
-
-
-
---------------------------------------------------------
--- Eval Function
---------------------------------------------------------
-
--- eval ast [("aux1", 10)]
--- eval (GreaterEqual (Add (Const 3) (Const 5)) (Sub (Const 10) (Var "aux"))) [("aux",2)] -- True
-eval :: Exp -> [(String,Int)] -> Int
-eval (Const i) _ = i
-eval (Var n) c = fromJust (lookup n c)                      -- lookup vai buscar o valor da variável no contexto c; fromjust coverte aquilo que o lookup devolve
-eval (Neg e) c = - (eval e c)
-eval (Add e1 e2) c = eval e1 c + eval e2 c
-eval (Sub e1 e2) c = eval e1 c - eval e2 c
-eval (Mult e1 e2) c = eval e1 c * eval e2 c
-eval (Div e1 e2) c = eval e1 c `div` eval e2 c
-eval (Equal e1 e2) c = fromEnum $ eval e1 c == eval e2 c    -- fromEnum converte um booleano para um inteiro
-eval (Greater e1 e2) c = fromEnum $ eval e1 c > eval e2 c
-eval (Less e1 e2) c = fromEnum $ eval e1 c < eval e2 c
-eval (GreaterEqual e1 e2) c = fromEnum $ eval e1 c >= eval e2 c
-eval (LessEqual e1 e2) c = fromEnum $ eval e1 c <= eval e2 c
