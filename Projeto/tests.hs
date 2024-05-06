@@ -22,7 +22,8 @@ test6 :: String
 test6 = "int main(int a){ int margem = 15; \
        \ if (margem > 30) \
        \ then { margem = 4 * 23 + 3 ; } \
-       \ else { margem = 0; } }"
+       \ else { margem = 0; } \
+       \ return margem;}"
 
 test7 :: String
 test7 = "int main(int a, char b){while (margem < 30) { margem = margem + 1; } \
