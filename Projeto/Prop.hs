@@ -36,6 +36,7 @@ instance Eq Inst where
   (ITE exp1 tb1 eb1) == (ITE exp2 tb2 eb2) = exp1 == exp2 && tb1 == tb2 && eb1 == eb2
   (While exp1 b1) == (While exp2 b2) = exp1 == exp2 && b1 == b2
   (For init1 cond1 inc1 b1) == (For init2 cond2 inc2 b2) = init1 == init2 && cond1 == cond2 && inc1 == inc2 && b1 == b2
+  (Print s1) == (Print s2) = s1 == s2
   (CallFunc s1 a1) == (CallFunc s2 a2) = s1 == s2 && a1 == a2
   (Return exp1) == (Return exp2) = exp1 == exp2
   _ == _ = False

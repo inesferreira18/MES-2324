@@ -69,7 +69,7 @@ genInsts maxInsts maxExps = do
 genInst :: Int -> Int -> Gen Inst
 genInst numInsts numExps = oneof [genDecl, genDeclAtrib numExps, genAtrib numExps,
                                   genDeclAtribFuncCall, genAtribFuncCall, genWhile numInsts numExps,
-                                  genFor numInsts numExps, genITE numInsts numExps,
+                                  genFor numInsts numExps, genITE numInsts numExps, genPrint,
                                   genCallFunc, genReturn numExps]
 
 genDecl :: Gen Inst
@@ -116,6 +116,14 @@ genCallFunc = do
                 t <- genString
                 args <- genArgCalls
                 return (CallFunc (h:t) args)
+
+genPrint :: Gen Inst
+genPrint = do
+            numWords <- choose (2, 5)
+            sentence <- vectorOf numWords genString  
+            -- separate words with spaces
+            let str = foldl1 (\acc x -> acc ++ " " ++ x) sentence 
+            return (Print str)
 
 genWhile :: Int -> Int -> Gen Inst
 genWhile numInsts numExps = do

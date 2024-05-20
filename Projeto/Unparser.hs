@@ -67,6 +67,7 @@ upInst (Decl t var) = upType t ++ " " ++ var ++ ";"
 upInst (While exp b) = "while(" ++ upExpLogicos exp ++ ") {" ++ upBlocoC b ++ "}"
 upInst (For insts1 exp insts2 b) = "for(" ++ upForVars insts1 ++ "; " ++ upExpLogicos exp ++ "; " ++ upForVars insts2 ++ ") {" ++ upBlocoC b ++ "}" 
 upInst (ITE exp b1 b2) = upIf (ITE exp b1 b2)
+upInst (Print s) = "print(\"" ++ s ++ "\");"
 upInst (CallFunc f a) = upFuncCall (CallFunc f a) ++ ";"
 upInst (Return exp) = "return " ++ upExpLogicos exp ++ ";"
 

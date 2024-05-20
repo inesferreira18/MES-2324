@@ -17,12 +17,12 @@ import Prop
 -- Mutate a random Exp from the program
 mutate :: PicoC -> Gen PicoC
 mutate program = do
-            exp <- chooseExp program
-            mutation <- chooseMutation exp
-            let pProgram = toZipper program
-                (Just newProgram) = applyTP (full_tdTP step) pProgram
-                step = idTP `adhocTP` applyMutation exp mutation
-            return (fromZipper newProgram)
+                    exp <- chooseExp program
+                    mutation <- chooseMutation exp
+                    let pProgram = toZipper program
+                        (Just newProgram) = applyTP (full_tdTP step) pProgram
+                        step = idTP `adhocTP` applyMutation exp mutation
+                    return (fromZipper newProgram)
 
 -- Apply a mutation to an Exp
 applyMutation :: Exp -> Exp -> Exp -> Maybe Exp

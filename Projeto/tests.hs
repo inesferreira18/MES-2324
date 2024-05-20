@@ -1,7 +1,7 @@
 module Tests where
 
 test0 :: String
-test0 = "void main(){x = 1 * 0; for(;x<2;){int aa;}}"
+test0 = "void main(){x = 1 * 0; for(;x<2;){int aa; print(\" Ola!!\");}}"
 
 test1 :: String
 test1 = "char calcula(){int aux=0 / 2;\n\n\nint aux = 0 / 2;}"
@@ -78,7 +78,7 @@ test22 :: String
 test22 = "void main(){while(!((4<=87)<-76) > (77||63)){return 2;}}"
 
 test23 :: String
-test23 = "void main(){while((!(4<=87))<3){funcAA();}}"
+test23 = "void main(){while((!(4<=87))<3){funcAA();print(\" Ola!!\");}}"
 
 test24 :: String
 test24 = "void main(){while((0 || 1<3) && 0){x = x - (-1); y = -1;}}"

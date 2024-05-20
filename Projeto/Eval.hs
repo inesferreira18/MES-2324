@@ -7,16 +7,17 @@ import PicoC
 import Data.Maybe
 import Data.List
 
+import Debug.Trace
 
 --------------------------------------------------------
 -- Runner Functions
 --------------------------------------------------------
 
 runTestSuite :: PicoC -> [([Int], Int)] -> Bool
-runTestSuite p ts = all (runTest p) ts
+runTestSuite p ts = all (runTest p) ts -- all verifica se todos os elementos da lista são verdadeiros
 
 runTest :: PicoC -> ([Int], Int) -> Bool
-runTest p (inputs, expected) = evaluate p inputs == expected
+runTest p (inputs, expected) = trace "\nRunning New Test" (evaluate p inputs == expected)
 
 
 --------------------------------------------------------
@@ -44,6 +45,7 @@ evalInst ((ITE exp b1 b2):t) c = if toEnum (evalExp exp c) then evalInst (b1 ++ 
 evalInst (w@(While exp b):t) c = if toEnum (evalExp exp c) then evalInst (b ++ [w] ++ t) c else evalInst t c
 evalInst (f@(For init exp inc b):t) c = evalInst (init ++ While exp (b++inc):t) c
 evalInst [Return exp] c = evalExp exp c
+evalInst ((Print s):t) c = trace s (evalInst t c)
 evalInst ((Atrib a exp):t) c = evalInst t (updateContext (a,evalExp exp c) c)
 evalInst ((DeclAtrib tp a exp):t) c = evalInst t (updateContext (a, evalExp exp c) c)
 evalInst ((Decl tp name):t) c = evalInst t (updateContext (name,value) c)

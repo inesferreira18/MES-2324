@@ -28,6 +28,7 @@ data ArgCall = ArgCall String
 data Inst = Decl Type String
           | DeclAtrib Type String Exp
           | Atrib String Exp
+          | Print String
           | DeclAtribFuncCall Type String Inst
           | AtribFuncCall String Inst
           | While Exp BlocoC
@@ -102,6 +103,10 @@ pArgCall :: Parser ArgCall
 pArgCall = f <$> pNomes
     where f a  = ArgCall a
 
+pPrint:: Parser Inst
+pPrint = f <$> token' "print(" <*> pString <*> token' ")"
+    where f a b c = Print b
+
 pInsts :: Parser [Inst]
 pInsts = zeroOrMore pInst
 
@@ -112,6 +117,7 @@ pInst =  f  <$> pDeclAtrib <*> symbol' ';' <*> espacos
      <|> g  <$> pWhile <*> espacos
      <|> h  <$> pFor <*> espacos
      <|> i  <$> pITE <*> espacos
+     <|> p  <$> pPrint <*> symbol' ';' <*> espacos
      <|> l  <$> pFuncCall <*> symbol' ';' <*> espacos
      <|> k  <$> pDeclAtribFuncCall <*> symbol' ';' <*> espacos
      <|> m  <$> pAtribFuncCall <*> symbol' ';' <*> espacos
@@ -122,6 +128,7 @@ pInst =  f  <$> pDeclAtrib <*> symbol' ';' <*> espacos
            g a b = a
            h a b = a
            i a b = a
+           p a b c = a
            k a b c = a
            l a b c = a
            m a b c = a

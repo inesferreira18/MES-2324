@@ -10,6 +10,7 @@ import TestGenerator
 import Test.QuickCheck
 import Eval
 import MutationGenerator
+import Instrument
 
 -----------
 -- Parse --
@@ -77,6 +78,7 @@ unparseMutation ioPicoC = do
                             let str = unparse picoC
                             return str
 
+
 ------------
 -- Runner --
 ------------
@@ -91,7 +93,7 @@ int main(int a){
 -}
 programa1 = "int main(int a){int margem=a; if (margem>30) then{margem=4*23+3;} else{margem = 0;} return margem;}"
 testSuitePrograma1 :: [([Int], Int)]
-testSuitePrograma1 = [([32], -6)]
+testSuitePrograma1 = [([32], 95),([29],0)]
 
 {-
 int main(int y, int z){ 
@@ -121,11 +123,12 @@ int main(int a){
     } else {
         c = 0;
     }
+    print(" CHEGUEI AQUI! ");
     return c;
 }
 -}
 
-programa3 = "int main(int a){int c; c=2+1; if(a < 3) then{int i=0; int j=5; while(i<7){ j=j-1; i=i+1;} c=c*j;} else {c=0;} return c;}"
+programa3 = "int main(int a){int c; c=2+1; if(a < 3) then{int i=0; int j=5; while(i<7){ j=j-1; i=i+1;} c=c*j;} else {c=0;} print(\" CHEGUEI AQUI! \"); return c;}"
 testSuitePrograma3 :: [([Int], Int)]
 testSuitePrograma3 = [([0], -6), ([4], 0)]
 
@@ -143,3 +146,8 @@ runMutation prog testSuite = do
 ---------------------
 -- Instrumentation --
 ---------------------
+instrument :: PicoC -> PicoC
+instrument p = instrumentation p
+
+instrumentTestSuite :: String -> [([Int],Int)] -> Bool
+instrumentTestSuite prog testSuite = instrumentedTestSuite (parse prog) testSuite
