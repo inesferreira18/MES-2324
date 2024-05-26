@@ -134,9 +134,9 @@ genWhile numInsts numExps = do
 
 genFor :: Int -> Int -> Gen Inst
 genFor numInsts numExps = do
-                            init <- oneof [genDeclAtrib numExps, genAtrib numExps]    -- just ints or char
+                            init <- oneof [genDeclAtrib numExps, genAtrib numExps]    
                             exp <- genExp numExps
-                            inc <- genAtrib numExps                                   -- cannot be aux = True; junt ints or char
+                            inc <- genAtrib numExps                                   
                             insts <- genBlocoC numInsts numExps
                             return (For [init] exp [inc] insts)
 
@@ -163,7 +163,6 @@ genBlocoC numInsts numExps = vectorOf numInsts (genInst numInsts numExps)
 -- Exp Generator
 instance Arbitrary Exp where
  arbitrary = sized genExp
- shrink = shrinkExp
 
 ------------
 -- genExp --
@@ -209,7 +208,7 @@ genDiv n = do
 
 genConst :: Gen Exp
 genConst = do
-            x <- genInt         -- arbitrary means that the value x can be any value of the type
+            x <- genInt        
             return (Const x)
 
 genNeg :: Gen Exp
@@ -279,27 +278,6 @@ genNot :: Int -> Gen Exp
 genNot n = do
             e1 <- genExp n
             return (Not e1)
-
-------------
--- Shrink --
-------------
-shrinkExp :: Exp -> [Exp]
-shrinkExp (Add e1 e2)  = [e1, e2] ++ [Add e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Sub e1 e2)  = [e1, e2] ++ [Sub e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Mult e1 e2) = [e1, e2] ++ [Mult e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Div e1 e2)  = [e1, e2] ++ [Div e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Neg e) = e : [Neg e' | e' <- shrinkExp e]
-shrinkExp (Const i) = [Const i' | i' <- shrink i]
-shrinkExp (Var v)   = [Var v' | v' <- shrink v]
-shrinkExp (Boolean b) = [Boolean b' | b' <- shrink b]
-shrinkExp (Greater e1 e2) = [e1, e2] ++ [Greater e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Less e1 e2) = [e1, e2] ++ [Less e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Equal e1 e2) = [e1, e2] ++ [Equal e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (GreaterEqual e1 e2) = [e1, e2] ++ [GreaterEqual e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (LessEqual e1 e2) = [e1, e2] ++ [LessEqual e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (And e1 e2) = [e1, e2] ++ [And e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Or e1 e2) = [e1, e2] ++ [Or e1' e2' | e1' <- shrinkExp e1, e2' <- shrinkExp e2]
-shrinkExp (Not e) = e : [Not e' | e' <- shrinkExp e]
 
 
 

@@ -92,27 +92,32 @@ int main(int a){
 }
 -}
 programa1 = "int main(int a){int margem=a; if (margem>30) then{margem=4*23+3;} else{margem = 0;} return margem;}"
+programa1_mutado = "int main(int a){int margem=a; if(margem>30) then{margem=(4*23)/3;} else{margem=0;} return margem;}"
 testSuitePrograma1 :: [([Int], Int)]
-testSuitePrograma1 = [([32], 95),([29],0)]
+testSuitePrograma1 = [([32], 95),([29],0),([-1],0),([100],95),([1],0)]
 
 {-
 int main(int y, int z){ 
-    for(int i = 0; i<5; i=i+1){
+    bool teste = False;
+    for(int i=0; i<5 && !teste; i=i+1){
         y = y + i * z;
-    } 
+    }
+    if(y>60){
+        y = y - 25;    
+    }
     return y;
 }
 -}
-programa2 = "int main(int y, int z){for(int i = 0; i<5; i=i+1){y = y + i * z;} return y;}"
+programa2 = "int main(int y, int z){bool teste=False; for(int i=0; i<5&&(!teste); i=i+1){y = y+i*z;}if(y>60){y=y-25;} return y;}"
+programa2_mutado = "int main(int y, int z){bool teste=False; for(int i=0; i<=5&&(!teste); i=i+1){y = y+i*z;}if(y>60){y=y-25;} return y;}"
 testSuitePrograma2 :: [([Int], Int)]
-testSuitePrograma2 = [([0,2], 20)]
+testSuitePrograma2 = [([0,2], 20),([-2,2], 18),([1,1], 11),([10,-1], 0),([10,5], 60)]
 
 {-
 int main(int a){ 
     int c;
     c=2+1;
-    if(a < 3) 
-    then{
+    if(a < 3) then{
         int i=0; 
         int j=5; 
         while(i<7){ 
@@ -127,10 +132,10 @@ int main(int a){
     return c;
 }
 -}
-
-programa3 = "int main(int a){int c; c=2+1; if(a < 3) then{int i=0; int j=5; while(i<7){ j=j-1; i=i+1;} c=c*j;} else {c=0;} print(\" CHEGUEI AQUI! \"); return c;}"
+programa3 = "int main(int a){int c; c=2+1; if(a<3) then{int i=0; int j=5; while(i<7){ j=j-1; i=i+1;} c=c*j;} else {c=0;} print(\" CHEGUEI AQUI! \"); return c;}"
+programa3_mutado = "int main(int a){ int c; c=2+1; if(a<3) then{int i=0; int j=83; while(i<7) {j=j-1; i=i+1;} c=c*j; } else{c=0;} print(\" CHEGUEI AQUI! \"); return c; }"
 testSuitePrograma3 :: [([Int], Int)]
-testSuitePrograma3 = [([0], -6), ([4], 0)]
+testSuitePrograma3 = [([0], -6), ([4], 0),([-1], -6),([3], 0),([5], 0)]
 
 run :: String -> [([Int], Int)] -> Bool
 run prog testSuite = runTestSuite (parse prog) testSuite
@@ -151,3 +156,4 @@ instrument p = instrumentation p
 
 instrumentTestSuite :: String -> [([Int],Int)] -> Bool
 instrumentTestSuite prog testSuite = instrumentedTestSuite (parse prog) testSuite
+

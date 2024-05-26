@@ -45,6 +45,7 @@ expListInst :: Inst -> [Exp]
 expListInst (Decl _ _) = []
 expListInst (DeclAtrib _ _ e) = [e]
 expListInst (Atrib _ e) = [e]
+expListInst (Print _) = []
 expListInst (DeclAtribFuncCall _ _ inst) = expListInst inst
 expListInst (AtribFuncCall _ inst) = expListInst inst
 expListInst (While e bloco) = e : concatMap expListInst bloco

@@ -20,7 +20,7 @@ instrumentFuncs [] = []
 instrumentFuncs (h:t) = (instrumentFunc h) : (instrumentFuncs t)
 
 instrumentFunc :: Func -> Func
-instrumentFunc (Func tp name args b) = Func tp name args (instrumentInsts b 1)
+instrumentFunc (Func tp name args b) = Func tp name args (instrumentInsts b 2)
 
 instrumentInsts :: [Inst] -> Int -> [Inst]
 instrumentInsts [] _ = []

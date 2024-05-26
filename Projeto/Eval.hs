@@ -14,12 +14,15 @@ import Debug.Trace
 --------------------------------------------------------
 
 runTestSuite :: PicoC -> [([Int], Int)] -> Bool
-runTestSuite p ts = all (runTest p) ts -- all verifica se todos os elementos da lista são verdadeiros
+runTestSuite p ts = 
+  let results = map (runTest p) ts
+      messages = map (\(t, r) -> "Test " ++ show t ++ " passed: " ++ show r ++ "\n") (zip ts results)
+      logResults = foldr (.) id (map trace messages)
+  in logResults (and results)
 
 runTest :: PicoC -> ([Int], Int) -> Bool
 runTest p (inputs, expected) = trace "\nRunning New Test" (evaluate p inputs == expected)
-
-
+                           
 --------------------------------------------------------
 -- Eval Functions
 --------------------------------------------------------
@@ -60,10 +63,12 @@ evalExp :: Exp -> [(String,Int)] -> Int
 evalExp (Add e1 e2) c = evalExp e1 c + evalExp e2 c
 evalExp (Sub e1 e2) c = evalExp e1 c - evalExp e2 c
 evalExp (Mult e1 e2) c = evalExp e1 c * evalExp e2 c
-evalExp (Div e1 e2) c = evalExp e1 c `div` evalExp e2 c
+evalExp (Div e1 e2) c = case evalExp e2 c of
+                          0 -> error "Division by zero!"
+                          _ -> evalExp e1 c `div` evalExp e2 c
 evalExp (Neg e) c = - (evalExp e c)
 evalExp (Const i) _ = i
-evalExp (Boolean b) _ = fromEnum b                                   -- AAAAAAAAAAAAa
+evalExp (Boolean b) _ = fromEnum b                                   
 evalExp (Equal e1 e2) c = fromEnum $ evalExp e1 c == evalExp e2 c    -- fromEnum converte um booleano para um inteiro
 evalExp (Greater e1 e2) c = fromEnum $ evalExp e1 c > evalExp e2 c
 evalExp (Less e1 e2) c = fromEnum $ evalExp e1 c < evalExp e2 c
