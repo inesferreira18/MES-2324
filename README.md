@@ -1,5 +1,7 @@
 # MES-2324
 
+Repositório destinado a guardar o trabalho realizado na cadeira de Manutenção e Evolução de Software no ano letivo 2023/2024.
+
 ## Grupo
 | Número   | Nome                                                        |
 | -------- | ----------------------------------------------------------- |
